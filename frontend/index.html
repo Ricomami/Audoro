@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <title>Index</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="icon" href="iconoGDLtech.png" sizes="96x96">
+
+</head>
+
+<body class="mx-auto max-w-full
+min-h-dvh 
+bg-gradient-to-b from-[#17c0de] via-[#3235bd] to-black
+border border-color-black
+font-serif
+">
+
+
+    <div class="major container">
+
+    </div>
+
+
+
+
+    </head>
+
+
+
+
+
+    <div class="container mx-auto border border-black p-20 bg-black/80 text-white mb-10">
+        <div class="hover:scale-105 transition-transform">
+            <span class="
+            rounded-full mx-auto text-4xl flex justify-center -mt-6 mb-3 text-[#17c0de]
+            z-10 text-center">Registro de auditorios</span>
+            <hr class="mb-10">
+        </div>
+
+
+        <div class="container">
+
+
+            <form id="formAuditorio" method="post" enctype="text/plain"
+                class="w-full max-w-lg mx-auto my-10 bg-white p-6 rounded-lg shadow-md space-y-4  bg-gradient-to-b from-gray-600 to-gray-950 border border-color-black flex flex-col justify-center">
+                <label for="nombre" class="block text-sm font-medium text-white my-3">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" placeholder="Nombre del Auditorio"
+                    class="w-full px-4 py-2 text-black  border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required>
+
+                <label for="capacidad" class="block text-sm font-medium text-white my-3">Capacidad:</label>
+                <input type="number" id="capacidad" name="capacidad" placeholder="Capacidad total del auditorio"
+                    class="w-full px-4 py-2 text-black  border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required>
+
+                <label for="ubicacion" class="block text-sm font-medium text-white my-3 ">Ubicacion:</label>
+                <input type="text" id="ubicacion" name="ubicacion" placeholder="Ubicacion"
+                    class="w-full px-4 py-2 text-black  border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 items-"
+                    required>
+                <button type="submit"
+                    class="w-40 mt-4 mx-auto bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition text-center">Crear
+                    Auditorio</button>
+            </form>
+
+
+            <span class="
+            rounded-full mx-auto text-4xl flex justify-center my-6 text-[#17c0de]
+            z-10 text-center">Lista de Auditorios</span>
+
+            <div class="">
+                <table id="tablaAuditorios" class="w-full border-black text-sm text-left">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="px-6 py-3 bg-blue-500">
+                                Id</th>
+                            <th scope="col" class="px-6 py-3 bg-blue-500">
+                                Nombre</th>
+                            <th scope="col" class="px-6 py-3 bg-blue-500">
+                                Capacidad</th>
+                            <th scope="col" class="px-6 py-3 bg-blue-500">
+                                Ubicacion</th>
+                            <th scope="col" class="px-6 py-3 bg-blue-500">
+                                Editar</th>
+                            <th scope="col" class="px-6 py-3 bg-blue-500">
+                                Eliminar</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white text-black border-b ">
+                        <tr>
+                            <td class="px-6 py-3"></td>
+                            <td class="px-6 py-3"></td>
+                            <td class="px-6 py-3"></td>
+                            <td class="px-6 py-3"></td>
+                            <td class="px-6 py-3">
+                                <button onclick="editarAuditorio(1, 'Auditorio Central', 200, 'Edificio A')"
+                                    class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">
+                                    Editar
+                                </button>
+                            </td>
+                            <td class="px-6 py-3">
+                                <button
+                                    class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Eliminar</button>
+                            </td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+
+
+        <script src="script.js"></script>
+        <script>
+            function editarAuditorio(id, nombre, capacidad, ubicacion) {
+                // Rellenar los campos del formulario
+                document.getElementById("nombre").value = nombre;
+                document.getElementById("capacidad").value = capacidad;
+                document.getElementById("ubicacion").value = ubicacion;
+
+                // Guardamos el id en un input oculto para saber qué auditorio estamos editando
+                let inputHidden = document.getElementById("auditorioId");
+                if (!inputHidden) {
+                    inputHidden = document.createElement("input");
+                    inputHidden.type = "hidden";
+                    inputHidden.id = "auditorioId";
+                    inputHidden.name = "id";
+                    document.getElementById("formAuditorio").appendChild(inputHidden);
+                }
+                inputHidden.value = id;
+
+                // Cambiar el botón a "Actualizar"
+                const btn = document.querySelector("#formAuditorio button[type='submit']");
+                btn.innerText = "Actualizar Auditorio";
+                btn.classList.remove("bg-blue-600");
+                btn.classList.add("bg-green-600");
+            }
+        </script>
+
+
+</body>
+
+</html>
