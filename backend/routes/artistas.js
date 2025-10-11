@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');
-//IMPORTAMOS EL CONTROLADOR
+
 const artistasController = require('../app/controllers/artistasController');
 
 //INDEX - Todos los registros
@@ -62,5 +62,9 @@ router.delete('/:id', artistasController.destroy
 //     res.json({ok:true,msg:`Funcion para eliminar el artista con id=${req.params.id}, DELETE FROM artiistas WHETE id=${req.params.id}`})
 // }
 )
+
+const upload = require('../app/middlewares/uploadMiddleware')
+
+router.post('/imagen/:id', upload.single('imagen'), artistasController.uploadImagenArtista);
 
 module.exports=router;

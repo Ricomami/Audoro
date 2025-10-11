@@ -17,7 +17,7 @@ router.get('/:id', clientesControler.show
 );
 
 const rules = [
-    body('nombre')
+    body('nombre_cliente')
         .escape()
         .notEmpty()
         .withMessage("El nombre del cliente es requerido!")
@@ -43,24 +43,14 @@ router.post('/', rules, clientesControler.store
     );
     
     const rules2 = [
-        body('nombre')
+        body('nombre_cliente')
             .escape()
             .notEmpty()
-            .withMessage("El nombre del cliente es requerido!")
-            .bail()
-            .isAlpha()
-            .withMessage("El nombre del cliente solo puede incluir letras"),
+            .withMessage("El nombre del cliente es requerido!"),
         body('apellido_pat')
             .escape()
             .notEmpty()
-            .withMessage("El apellido paterno del clienete es requerido!")
-            .bail()
-            .isAlpha()
-            .withMessage("Los apellidos del cliente solo pueden incluir letras"),
-        body('apellido_mat')
-            .bail()
-            .isAlpha()
-            .withMessage("Los apellidos del cliente solo pueden incluir letras"),
+            .withMessage("El apellido paterno del clienete es requerido!"),
         body('estado')
             .escape()
             .notEmpty()

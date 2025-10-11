@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const path = require('path');
 
 const app=express();
 app.use(cors());
@@ -64,3 +65,5 @@ app.use("/secciones",seccionesRoutes);
 const usuariosRoutes = require("./routes/usuarios")
 app.use("/usuarios",usuariosRoutes);
 
+//Servir archivos estaticos (imagenes)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

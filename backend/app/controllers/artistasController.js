@@ -1,5 +1,6 @@
 const con = require('../../db/mysql');
 const { validationResult } = require('express-validator');
+const path = require('path');
 
 async function index(req, res) {
     let c;
@@ -89,6 +90,32 @@ async function destroy (req, res) {
     }
 };
 
-module.exports = {
+const uploadImagenArtista = async (req, res) => {
+    let c;
+    try {
+        c = await con.conectarBD();
+        //Verificar que se haya subido el archivo
+        if (!req.file) {
+            return res.status(400).json({ mensaje : 'No se subió ninguna imagen' });
+        } 
+
+        //Se extraen los datos del archivo
+        const id = req.params.id;
+        const rutaArchivo = path.join('uploads', 'artistas', req.file.filename);
+        //Guardamos en la BD
+        await c.query('UPDATE artistas SET imagen_artista = ? WHERE id_artista=?',
+            [rutaArchivo, id]
+        );
+        res.status(200).json({ mensaje : "Imagen del artista ${id} subida correctamente", archivo: rutaArchivo})
+
+
+    } catch (error) {
+        console.error(error);
+        return res.status(400).json({ mensaje : "Error al subir la imagen", error : error.message});
+    }
+};
+
+module.exports = { 
+    uploadImagenArtista,
     index, show, store, update, destroy
 }
