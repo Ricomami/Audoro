@@ -55,4 +55,12 @@ async function desconectarDB(conexion){
     }
 };
 
+const { Sequelize } = require('sequelize');
+
+const sequelize = new Sequelize('auditorio', 'root', '',{
+    host: 'localhost',
+    dialect: 'mysql'
+});
+
+module.exports = sequelize;
 module.exports ={conectarBD, desconectarDB};
