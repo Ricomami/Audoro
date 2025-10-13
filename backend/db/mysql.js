@@ -55,6 +55,8 @@ async function desconectarDB(conexion){
     }
 };
 
+
+//CONEXION CON SEQUELIZE
 const { Sequelize } = require('sequelize');
 
 const sequelize = new Sequelize('auditorio', 'root', '',{

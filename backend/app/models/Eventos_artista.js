@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../../db/mysql');
 const Evento = require('./Evento');
-const Artista = require('../models/artista');
+const Artista = require('./artista');
 
 const EventosArtistas = sequelize.define('EventosArtistas', {
   evento_id: { type: DataTypes.INTEGER, primaryKey: true },
