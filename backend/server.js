@@ -1,5 +1,8 @@
 const express = require("express");
 const cors = require("cors");
+const  dotenv = require("dotenv"); //Importamos dotenv para usar las variables de entorno del .env
+dotenv.config({path:"../.env"}); //Carga las variables del .env
+const conectarBD = require("./db/mongoose")
 
 const app=express();
 app.use(cors());
@@ -64,3 +67,6 @@ app.use("/secciones",seccionesRoutes);
 const usuariosRoutes = require("./routes/usuarios")
 app.use("/usuarios",usuariosRoutes);
 
+
+//MONGOOSE
+conectarBD()

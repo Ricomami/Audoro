@@ -1,42 +1,87 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../../db/mysql');
-const Asiento = require('./Asiento');
-const Funcion = require('./Funcion'); // aún falta crear, pero ya preparamos
-const Cliente = require('./Cliente');
-const Pago = require('./Pago');
+// const { DataTypes } = require('sequelize');
+// const sequelize = require('../../db/mysql');
+// const Asiento = require('./Asiento');
+// const Funcion = require('./Funcion'); // aún falta crear, pero ya preparamos
+// const Cliente = require('./Cliente');
+// const Pago = require('./Pago');
 
-const Entrada = sequelize.define('Entrada', {
-    id_entrada: { 
-        type: DataTypes.INTEGER, 
-        autoIncrement: true, 
-        primaryKey: true 
-    },
-    asiento_id: { type: DataTypes.INTEGER, allowNull: false },
-    pago_id: { type: DataTypes.INTEGER, allowNull: false },
-    funcion_id: { type: DataTypes.INTEGER, allowNull: false },
-    cliente_id: { type: DataTypes.INTEGER, allowNull: false },
-    precio_final: { type: DataTypes.DECIMAL(10,2) },
-    estado: { 
-        type: DataTypes.ENUM('Activo','Inactivo','Pendiente','Archivado'), 
-        defaultValue: 'Activo' },
-}, {  
-    tableName: 'entradas',
-    timestamps: true,
-    createdAt: 'created_at',
-    updatedAt: 'updated_at'
-});
+// const Entrada = sequelize.define('Entrada', {
+//     id_entrada: { 
+//         type: DataTypes.INTEGER, 
+//         autoIncrement: true, 
+//         primaryKey: true 
+//     },
+//     asiento_id: { type: DataTypes.INTEGER, allowNull: false },
+//     pago_id: { type: DataTypes.INTEGER, allowNull: false },
+//     funcion_id: { type: DataTypes.INTEGER, allowNull: false },
+//     cliente_id: { type: DataTypes.INTEGER, allowNull: false },
+//     precio_final: { type: DataTypes.DECIMAL(10,2) },
+//     estado: { 
+//         type: DataTypes.ENUM('Activo','Inactivo','Pendiente','Archivado'), 
+//         defaultValue: 'Activo' },
+// }, {  
+//     tableName:  'entradas',
+//     timestamps: true,
+//     createdAt: 'created_at',
+//     updatedAt: 'updated_at'
+// });
 
-// Relaciones FK
-Entrada.belongsTo(Asiento, { foreignKey: 'asiento_id' });
-Asiento.hasMany(Entrada, { foreignKey: 'asiento_id' });
+// // Relaciones FK
+// Entrada.belongsTo(Asiento, { foreignKey: 'asiento_id' });
+// Asiento.hasMany(Entrada, { foreignKey: 'asiento_id' });
 
-Entrada.belongsTo(Funcion, { foreignKey: 'funcion_id' });
-Funcion.hasMany(Entrada, { foreignKey: 'funcion_id' });
+// Entrada.belongsTo(Funcion, { foreignKey: 'funcion_id' });
+// Funcion.hasMany(Entrada, { foreignKey: 'funcion_id' });
 
-Entrada.belongsTo(Cliente, { foreignKey: 'cliente_id' });
-Cliente.hasMany(Entrada, { foreignKey: 'cliente_id' });
+// Entrada.belongsTo(Cliente, { foreignKey: 'cliente_id' });
+// Cliente.hasMany(Entrada, { foreignKey: 'cliente_id' });
 
-Entrada.belongsTo(Pago, { foreignKey: 'pago_id' });
-Pago.hasMany(Entrada, { foreignKey: 'pago_id' });
+// Entrada.belongsTo(Pago, { foreignKey: 'pago_id' });
+// Pago.hasMany(Entrada, { foreignKey: 'pago_id' });
 
 module.exports = Entrada;
+
+//MODELO CON MONGOOSE
+
+const mongoose = require("mongoose");
+
+const entradaSchema = new mongoose.Schema({
+    // id_entrada: {
+    //     type: Number,
+    //     required: true, 
+    //     unique: true
+    // },
+    asiento_id:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Asiento", 
+        required: true,
+    },
+    pago_id:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Pago",
+        required: true
+    },
+    funcion_id:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Funcion",
+        required: true
+    },
+    cliente_id:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Cliente",
+        required: true
+    },
+    precio_final:{
+        type: Number,
+        min: [0, "El precio no puede ser negativo"]
+    },
+    estado: {
+        type: String,
+        enum: ['Activo','Inactivo','Pendiente','Archivado'],
+        default: 'Activo'
+    }
+}, {
+    timestamps: true
+});
+
+module.exports = mongoose.model("Entrada", entradaSchema);

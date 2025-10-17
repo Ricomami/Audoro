@@ -1,30 +1,57 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../../db/mysql');
-const Cliente = require('./Cliente');
+// const { DataTypes } = require('sequelize');
+// const sequelize = require('../../db/mysql');
+// const Evento = require('./Evento');
 
-const Pago = sequelize.define('Pago', {
-    id_pago: { 
-        type: DataTypes.INTEGER, 
-        autoIncrement: true, 
-        primaryKey: true 
+// const Funcion = sequelize.define('Funcion', {
+//     id_funcion: { 
+//         type: DataTypes.INTEGER, 
+//         autoIncrement: true, 
+//         primaryKey: true 
+//     },
+//     evento_id: { type: DataTypes.INTEGER, allowNull: false },
+//     fecha_hora_funcion: { type: DataTypes.DATE, allowNull: false },
+//     estado: { 
+//         type: DataTypes.ENUM('Activo','Inactivo','Pendiente','Suspendido'), 
+//         defaultValue: 'Activo' 
+//     },
+// }, {
+//     tableName: 'funciones',
+//     timestamps: true,
+//     createdAt: 'created_at',
+//     updatedAt: 'updated_at'
+// });
+
+// // Relación FK con Evento
+// Funcion.belongsTo(Evento, { foreignKey: 'evento_id' });
+// Evento.hasMany(Funcion, { foreignKey: 'evento_id' });
+
+// module.exports = Funcion;
+
+//MODELO CON MONGOOSE
+
+const mongoose = require("mongoose");
+
+const funcionSchema = mongoose.Schema({
+    evento_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Evento", 
+        required: true,
     },
-    cliente_id: { type: DataTypes.INTEGER, allowNull: false },
-    metodo_pago: { type: DataTypes.STRING(50), allowNull: false },
-    monto: { type: DataTypes.DECIMAL(10,2), allowNull: false },
-    fecha_pago: { type: DataTypes.DATE },
-    estado: { 
-        type: DataTypes.ENUM('Activo','Inactivo','Pendiente','Suspendido','Archivado'), 
-        defaultValue: 'Activo' 
+    fecha_hora_funcion: {
+       type: Date,
+       required: true,
+        validate: {
+            validator: function (v) {
+                return v >= new Date();
+            },
+            message: "La fecha no puede ser pasada."
+        }
     },
-}, {
-    tableName: 'pagos',
-    timestamps: true,
-    createdAt: 'created_at',
-    updatedAt: 'updated_at'
-});
+    estado: {
+        type: String,
+        enum: ['Activo','Inactivo','Pendiente','Suspendido'],
+        default: 'Activo'
+    }
+},  { timestamps: true});
 
-// Relación FK con Cliente
-Pago.belongsTo(Cliente, { foreignKey: 'cliente_id' });
-Cliente.hasMany(Pago, { foreignKey: 'cliente_id' });
-
-module.exports = Pago;
+module.exports = mongoose.model("Funcion", funcionSchema);
