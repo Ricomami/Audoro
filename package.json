@@ -8,6 +8,6 @@
     "sequelize": "^6.37.7"
   },
   "scripts": {
-    "start": "node --watch server.js"
+    "start": "node --watch backend/server.js"
   }
 }

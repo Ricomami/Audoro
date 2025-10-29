@@ -41,7 +41,7 @@ async function store(req, res) {
         c = await con.conectarBD();
         const datos = req.body;
         // res.json({datos});
-        const [respuesta] = await c.query('INSERT INTO eventos (nombre_evento, descripcion, imagen, fecha, hora_fin, aforo, auditorio_id) VALUES (?,?,?,?,?,?,?) ',
+        const [respuesta] = await c.query('INSERT INTO eventos (nombre_evento, descripcion, imagen_evento, fecha, hora_fin, aforo, auditorio_id) VALUES (?,?,?,?,?,?,?) ',
             [datos.nombre_evento, datos.descripcion, datos.imagen, datos.fecha, datos.hora_fin, datos.aforo, datos.auditorio_id]);
         res.status(200).json({ datos: respuesta, idCreada: respuesta.insertId });
     } catch (error) {

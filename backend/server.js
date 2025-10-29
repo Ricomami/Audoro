@@ -1,8 +1,10 @@
 const express = require("express");
 const cors = require("cors");
 const  dotenv = require("dotenv"); //Importamos dotenv para usar las variables de entorno del .env
+
 dotenv.config({path:"../.env"}); //Carga las variables del .env
-const conectarBD = require("./db/mongoose")
+
+const { conectarBD, conectarCompass } = require("./db/mongoose")
 
 const app=express();
 app.use(cors());
@@ -14,6 +16,11 @@ app.get("/", (req, res)=>{
 app.listen(3000,() =>{
     console.log("Servidor corriendo en http://localhost:3000");
 });
+
+//Conectar con MongoDB (UNA SOLA CONEXION A LA VEZ)
+    conectarBD() //Atlas (nube)
+    // conectarCompass() //Compass (local)
+
 
 //ARTISTAS
 const artistasRoutes = require("./routes/artistas")
@@ -67,6 +74,3 @@ app.use("/secciones",seccionesRoutes);
 const usuariosRoutes = require("./routes/usuarios")
 app.use("/usuarios",usuariosRoutes);
 
-
-//MONGOOSE
-conectarBD()
