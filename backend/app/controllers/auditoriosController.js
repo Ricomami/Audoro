@@ -46,7 +46,7 @@ async function store(req, res) {
     c = await con.conectarBD();
     const datos = req.body;
     const [respuesta] = await c.query(
-      'INSERT INTO auditorios (id_auditorio, nombre, capacidad, direccion, esstado) VALUES (?,?,?,?,?)',
+      'INSERT INTO auditorios (id_auditorio, nombre, capacidad, direccion, estado) VALUES (?,?,?,?,?)',
       [datos.id_auditorio, datos.nombre, datos.capacidad, datos.direccion, datos.estado]
     );
     res.status(200).json({ datos: datos, idCreada: respuesta.insertId });
