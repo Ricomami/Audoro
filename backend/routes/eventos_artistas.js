@@ -10,7 +10,7 @@ router.get('/', eventos_artistasController.index
 // }
 );
 
-router.get('/:id', eventos_artistasController.show
+router.get('/:evento_id/:artista_id', eventos_artistasController.show
 //     (req,res) =>{
 //     res.json({ok:true,msg:`Muestra solo los eventos de artistas con id=${req.params.id}, SELECT INTO evento+artistas WHERE id=${req.params.id}`})
 // }
@@ -62,7 +62,7 @@ const rules2 = [
         .isAlpha()
         .withMessage("El estado solo incluye letras")
 ]
-router.put('/:id', rules2, eventos_artistasController.update
+router.put('/:evento_id/:artista_id', rules2, eventos_artistasController.update
 //     (req, res) => {
 //     res.json({ok:true,msg:`Funcion para actualizar el evento de artistas con id=${req.params.id}, UPDATE INTO evento_artistas WHERE id=${req.params.id}`})
 // }
