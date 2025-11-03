@@ -59,8 +59,9 @@ router.post('/', rules, pagosController.store
             .notEmpty()
             .withMessage("El monto del pago es requerido!")
             .bail()
-            .isInt()
-            .withMessage("El monto del pago solo puede incluir numeros"),
+            .isFloat({min:0})
+            .withMessage("El monto del pago solo puede incluir numeros")
+            .toFloat(),
         body('estado')
             .escape()
             .notEmpty()

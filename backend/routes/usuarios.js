@@ -21,7 +21,7 @@ const rules = [
         .escape()
         .notEmpty()
         .withMessage("El nombre del usuario es requerido!"),
-        body('password')
+        body('contraseña')
         .escape()
         .notEmpty()
         .withMessage("La contraseña del usuario es requerida")
@@ -50,7 +50,7 @@ router.post('/', rules, usuariosController.store
             .escape()
             .notEmpty()
             .withMessage("El nombre del usuario es requerido!"),
-            body('password')
+            body('contraseña')
             .escape()
             .notEmpty()
             .withMessage("La contraseña del usuario es requerida")

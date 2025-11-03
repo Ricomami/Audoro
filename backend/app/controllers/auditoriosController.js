@@ -33,12 +33,12 @@ async function show(req, res) {
 
 
 async function store(req, res) {
-//VALIDACION DE DATOS INGRESADOS
+  //VALIDACION DE DATOS INGRESADOS
   //resultado validado del express-validator
   const result = validationResult(req);
   console.log(result);
-  if (!result.isEmpty() ){
-    return res.status(422).json({ errors : result.array() });
+  if (!result.isEmpty()) {
+    return res.status(422).json({ errors: result.array() });
   }
 
   let c;
@@ -46,10 +46,10 @@ async function store(req, res) {
     c = await con.conectarBD();
     const datos = req.body;
     const [respuesta] = await c.query(
-      'INSERT INTO auditorios (id_auditorio, nombre, capacidad, ubicacion) VALUES (?,?,?,?)',
-      [datos.id_auditorio, datos.nombre, datos.capacidad, datos.ubicacion]
+      'INSERT INTO auditorios (id_auditorio, nombre, capacidad, direccion, estado) VALUES (?,?,?,?,?)',
+      [datos.id_auditorio, datos.nombre, datos.capacidad, datos.direccion, datos.estado]
     );
-    res.status(200).json({ datos: respuesta, idCreada: respuesta.insertId });
+    res.status(200).json({ datos: datos, idCreada: respuesta.insertId });
   } catch (error) {
     res.status(400).json({ mensaje: 'Error en la consulta', error: error.message });
   } finally {
@@ -61,8 +61,8 @@ async function update(req, res) {
 
   const result = validationResult(req);
   console.log(result);
-  if (!result.isEmpty() ){
-    return res.status(422).json({ errors : result.array() });
+  if (!result.isEmpty()) {
+    return res.status(422).json({ errors: result.array() });
   }
 
   let c;
