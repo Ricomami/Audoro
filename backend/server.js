@@ -1,8 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 const  dotenv = require("dotenv"); //Importamos dotenv para usar las variables de entorno del .env
+const path = require('path');
 
-dotenv.config({path:"../.env"}); //Carga las variables del .env
+dotenv.config({path: path.resolve(__dirname,"../.env")}); //Carga las variables del .env
 
 const { conectarBD, conectarCompass } = require("./db/mongoose")
 
