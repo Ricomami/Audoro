@@ -18,8 +18,9 @@ async function show(req, res) {
     let c;
     try {
         c = await con.conectarBD();
-        var id = req.params.id;
-        const [respuesta] = await c.query('SELECT * FROM eventos_artistas WHERE evento_id=?', [id]);
+        var evento_id = req.params.evento_id;
+        var artista_id = req.params.artista_id;
+        const [respuesta] = await c.query('SELECT * FROM eventos_artistas WHERE evento_id=? AND artista_id=?', [evento_id, artista_id]);
         res.status(200).json({ datos: respuesta[0] });
     } catch (error) {
         res.status(400).json({ mensaje: 'Error en la consulta', error: error.message });
@@ -41,8 +42,8 @@ async function store(req, res) {
         c = await con.conectarBD();
         const datos = req.body;
         // res.json({datos});
-        const [respuesta] = await c.query('INSERT INTO eventos_artistas (evento_id, artista_id) VALUES (?,?) ',
-            [datos.evento_id, datos.artista_id]);
+        const [respuesta] = await c.query('INSERT INTO eventos_artistas (evento_id, artista_id, estado) VALUES (?,?,?) ',
+            [datos.evento_id, datos.artista_id, datos.estado]);
         res.status(200).json({ datos: respuesta, idCreada: respuesta.insertId });
     } catch (error) {
         res.status(400).json({ mensaje: 'Error en la consulta', error : error.message });
@@ -61,10 +62,10 @@ if (!result.isEmpty() ){
     let c;
     try {
         c = await con.conectarBD();
-        var id = req.params.id;
+        const {evento_id, artista_id} = req.params;
         const datos = req.body;
-        const [respuesta] = await c.query('UPDATE eventos_artistas SET evento_id=?, artista_id=?, estado=? WHERE artista_id=?',
-            [datos.evento_id, datos.artista_id, datos.estado, id]);
+        const [respuesta] = await c.query('UPDATE eventos_artistas SET evento_id=?, artista_id=?, estado=? WHERE evento_id=? AND artista_id=?',
+            [datos.evento_id, datos.artista_id, datos.estado, evento_id, artista_id]);
         res.status(200).json({ datos: respuesta, mensaje : 'Filas actualizadas', filasModificadas:respuesta.affectedRows });
     } catch (error) {
         res.status(400).json({mensaje : 'Error en la consulta', error:error.message});
@@ -77,9 +78,10 @@ async function destroy (req, res) {
     let c;
     try {
         c = await con.conectarBD(); 
-        var id = req.params.id;
-        const [respuesta] = await c.query('UPDATE eventos_artistas SET estado=? WHERE artista_id=?',
-            ['Inactivo', id]);
+        var evento_id = req.params.evento_id;
+        var artista_id = req.params.artista_id;
+        const [respuesta] = await c.query('UPDATE eventos_artistas SET estado=? WHERE evento_id=? AND artista_id=?',
+            ['Inactivo', evento_id, artista_id]);
         res.status(200).json({mensaje : 'Evento de artista  dado de baja', datos : respuesta});
     } catch (error) {
         res.status(400).json({mensaje : 'Error en la consulta', error : error.message});
