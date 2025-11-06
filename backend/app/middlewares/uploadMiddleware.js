@@ -1,10 +1,9 @@
-
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
 ///Tipos de carpetas permitidos (seguridad)
-const tiposValidos = ['artistas','clientes','eventos','salas','empleados'];
+const tiposValidos = ['artistas','clientes','auditorios','secciones','usuarios','eventos'];
 
 const storage = multer.diskStorage({
     destination:(req, file, cb) => {
@@ -15,7 +14,7 @@ const storage = multer.diskStorage({
             return cb(new Error(`Tipo de entidad no válido: ${tipo}`));
         }
 
-        const carpetaDestino = path.join(__dirname, '../../uploads', tipo);
+        const carpetaDestino = path.join(__dirname, `../uploads/${tipo}`);
 
         //Si no existe la carpeta se crea
         if (!fs.existsSync(carpetaDestino)) {
@@ -24,12 +23,17 @@ const storage = multer.diskStorage({
 
         cb(null, carpetaDestino);
     },
-
     filename: (req, file, cb) => {
-        const id = req.params.id; //ID del registro de artista, cliente, evento, auditorio y usuario
+        const id = req.params.id; //ID del registro de artistas, auditorios, clientes, eventos, secciones y usuarios
         const extension = path.extname(file.originalname);
         const nombreArchivo = `${id}-${Date.now()}${extension}`;
         cb(null, nombreArchivo);
+
+        // const id = req.params.id; //ID del registro de artistas, auditorios, clientes, eventos, secciones y usuarios
+        // const extension = path.extname(file.originalname);
+        // const nombreArchivo = `${id}-${Date.now()}
+        // ${extension}`;
+        // cb(null, nombreArchivo);
     }
 });
 
@@ -47,7 +51,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
     storage, 
     fileFilter, 
-    limits: { fileSize: 3 * 1024 * 1024 } //3 MB maximo
+    limits: { fileSize: 5 * 1024 * 1024 } //3 MB maximo
 });
 
 module.exports = upload;

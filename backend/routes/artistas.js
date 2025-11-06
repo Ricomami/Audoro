@@ -1,6 +1,25 @@
 const express = require('express');
 const router = express.Router();
-const { body } = require('express-validator');
+const multer = require('multer');
+const path = require('path');
+const { body, validationResult } = require('express-validator');
+// const upload = require('../app/middlewares/uploadMiddleware')
+// const Artista = require('../app/models/Artista');
+
+//Configurar donde se guardaran las imagenes
+const storage  = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "uploads/artistas/");
+    },
+    filename: (req, file, cb) => {
+        //Usamos un identificador temporal o con ID o un Date.now()
+        const uniqueSuffix = Date.now() + "-" + path.extname(file.originalname); 
+        cb(null, file.fieldname + "-" + uniqueSuffix);
+    }
+});
+
+const upload = multer({ storage });
+
 
 const artistasController = require('../app/controllers/artistasController');
 
@@ -27,7 +46,7 @@ const rules = [
         .notEmpty()
         .withMessage("El género del artista es requerido!")
 ]
-router.post('/', rules, artistasController.store
+router.post('/', upload.single("imagen"),rules, artistasController.store
     //      (req, res) =>[
         //     res.json({ok:true,msg:`Funcion para insertar un nuevo artista, INSERT INTO artistas...`})
         // ]
@@ -51,7 +70,7 @@ router.post('/', rules, artistasController.store
             .withMessage("El estado solo debe incluir letras")
 
     ]
-router.put('/:id',rules2, artistasController.update
+router.put('/:id', upload.single("imagen"), rules2, artistasController.update
 //     (req, res) => {
 //     res.json({ok:true,msg:`Funcion para editar el artista con id=${req.params.id}, UPDATE artistas WHERE id=${req.params.id}`})
 // }
@@ -61,10 +80,6 @@ router.delete('/:id', artistasController.destroy
 //     (req, res) =>{
 //     res.json({ok:true,msg:`Funcion para eliminar el artista con id=${req.params.id}, DELETE FROM artiistas WHETE id=${req.params.id}`})
 // }
-)
-
-const upload = require('../app/middlewares/uploadMiddleware')
-
-router.post('/imagen/:id', upload.single('imagen'), artistasController.uploadImagenArtista);
+);
 
 module.exports=router;

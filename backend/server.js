@@ -2,6 +2,10 @@ const express = require("express");
 const cors = require("cors");
 const  dotenv = require("dotenv"); //Importamos dotenv para usar las variables de entorno del .env
 const path = require('path');
+const multer = require('multer'); // Importamos la libreria de Multer
+const fs = require('node:fs'); //Para trabajar con los nombres de los archivos Multer
+
+const upload = multer({dest: 'uploads'}) // Middleware que se coloca dentro de nuestras url's detras de la resolucion final para trabajar con las imagenes.  
 
 dotenv.config({path: path.resolve(__dirname,"../.env")}); //Carga las variables del .env
 
@@ -75,5 +79,34 @@ app.use("/secciones",seccionesRoutes);
 const usuariosRoutes = require("./routes/usuarios")
 app.use("/usuarios",usuariosRoutes);
 
-//Servir archivos estaticos (imagenes)
+//MULTER Servir archivos estaticos (imagenes)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+//RECEPCION DE UNA SOLA IMAGEN
+app.post('/imagenes/single',upload.single('imagen'), (req, res)=>{
+    console.log(req.file);
+    guardarImagen(req.file);
+    res.send('Terminada');
+});
+
+function guardarImagen(file) {
+    const newPath = `./uploads/${file.originalname}`;
+    fs.renameSync(file.path, newPath);
+    return newPath;
+}
+
+// function guardarImagenAuditorios(file) { 
+//     const newPath = `./uploads/auditorios/${file}`
+// }
+
+//RECEPCION DE VARIAS IMAGENES (Este específicamente con 10)
+app.post('/imagenes/multi', upload.array('imagenes', 10), (req, res) => {
+    req.files.map(guardarImagen);
+    res.send('Terminado Multi');
+})
+
+const uploadRoutes = require('./routes/uploadRoutes');
+app.use('/upload', uploadRoutes);
+
+//EXPONEMOS DE MANERA PUBLICA LA CARPETA UPLOADS
+app.use("/uploads", express.static("uploads"));
