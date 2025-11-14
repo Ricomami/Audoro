@@ -15,6 +15,10 @@ const app=express();
 app.use(cors());
 app.use(express.json());
 
+
+//MULTER Servir archivos estaticos (imagenes)
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 app.get("/", (req, res)=>{
     res.send("Servidor backend funcionando 🚀");
 });
@@ -79,8 +83,6 @@ app.use("/secciones",seccionesRoutes);
 const usuariosRoutes = require("./routes/usuarios")
 app.use("/usuarios",usuariosRoutes);
 
-//MULTER Servir archivos estaticos (imagenes)
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 //RECEPCION DE UNA SOLA IMAGEN
 app.post('/imagenes/single',upload.single('imagen'), (req, res)=>{
@@ -95,18 +97,8 @@ function guardarImagen(file) {
     return newPath;
 }
 
-// function guardarImagenAuditorios(file) { 
-//     const newPath = `./uploads/auditorios/${file}`
-// }
-
-//RECEPCION DE VARIAS IMAGENES (Este específicamente con 10)
+    //RECEPCION DE VARIAS IMAGENES (Este específicamente con 10)
 app.post('/imagenes/multi', upload.array('imagenes', 10), (req, res) => {
     req.files.map(guardarImagen);
     res.send('Terminado Multi');
 })
-
-const uploadRoutes = require('./routes/uploadRoutes');
-app.use('/upload', uploadRoutes);
-
-//EXPONEMOS DE MANERA PUBLICA LA CARPETA UPLOADS
-app.use("/uploads", express.static("uploads"));

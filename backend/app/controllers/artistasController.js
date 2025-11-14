@@ -7,8 +7,16 @@ async function index(req, res) {
     let c;
     try {
         c = await con.conectarBD();
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
         const [respuesta] = await c.query('SELECT * FROM artistas');
-        res.status(200).json({ datos: respuesta });
+        
+        const datosTransformados = respuesta.map(artista => ({
+          ...artista,
+          imagen_artista: artista.imagen_artista
+          ? `${baseUrl}/${artista.imagen_artista.replace(/\\/g, "/")}`
+          : null
+        }));
+        res.status(200).json({ datos: datosTransformados });
     } catch (error) {
         res.status(400).json({ mensaje: 'Error en la consulta', error: error.message });
     } finally {
@@ -20,9 +28,19 @@ async function show(req, res) {
     let c;
     try {
         c = await con.conectarBD();
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
         var id = req.params.id;
         var [respuesta] = await c.query('SELECT * FROM artistas WHERE id_artista=? ', [id]);
-        res.status(200).json({ datos: respuesta[0] });
+        if ( respuesta.lenght === 0 ) {
+          return res.status(404).json({ mensaje: 'Artista no encontrado' });
+        }
+        
+        const artista = respuesta[0];
+        artista.imagen_artista = artista.imagen_artista
+        ? `${baseUrl}/${artista.imagen_artista.replace(/\\/g, "/")}`
+        : null;
+
+        res.status(200).json({ datos: artista });
     } catch (error) {
         res.status(400).json({ mensaje: 'Error en la consulta', error: error.message });
     } finally {
@@ -97,18 +115,24 @@ async function update(req, res) {
 
     // Si viene una nueva imagen en la petición
     if (req.file) {
-      const nuevaRuta = path.join("uploads", "artistas", req.file.filename);
+      const extension = path.extname(req.file.originalname);
+      const nuevoNombre = `${id}-${Date.now()}${extension}`;
+      const nuevaRuta = path.join("uploads", "artistas", nuevoNombre);
+      fs.renameSync(req.file.path, nuevaRuta);
+      rutaRelativa =`uploads/artistas/${nuevoNombre}`;
+
 
       // Si había una imagen anterior, la eliminamos
       if (rutaImagen) {
         const rutaAbsoluta = path.resolve(rutaImagen);
+
         if (fs.existsSync(rutaAbsoluta)) {
           fs.unlinkSync(rutaAbsoluta);
-          console.log("🗑 Imagen anterior eliminada:", rutaAbsoluta);
+          console.log("Imagen anterior eliminada:", rutaAbsoluta);
         }
       }
 
-      rutaImagen = nuevaRuta;
+      rutaImagen = rutaRelativa;
     }
 
     // Actualizamos todos los campos, incluyendo la imagen (si existe)
