@@ -1,8 +1,25 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
 const { body } = require('express-validator');
 
 const clientesControler = require('../app/controllers/clientesController')
+
+//Configurar donde se guardaran las imagenes
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "uploads/clientes/");
+    },
+    filename: (req, file, cb) => {
+        //Usamos un identificador temporal o con ID o un Date.now()
+        const uniqueSuffix = Date.now() + "-" + path.extname(file.originalname); 
+        cb(null, file.fieldname + "-" + uniqueSuffix);
+    }
+});
+const upload = multer({ storage });
+
+
 
 router.get('/', clientesControler.index
 //     (req, res) => {
@@ -17,13 +34,10 @@ router.get('/:id', clientesControler.show
 );
 
 const rules = [
-    body('nombre_cliente')
+    body('nombre')
         .escape()
         .notEmpty()
-        .withMessage("El nombre del cliente es requerido!")
-        .bail()
-        .isAlpha()
-        .withMessage("El nombre del cliente solo puede incluir letras"),
+        .withMessage("El nombre del cliente es requerido!"),
     body('apellido_pat')
         .escape()
         .notEmpty()
@@ -36,14 +50,14 @@ const rules = [
         .isAlpha()
         .withMessage("Los apellidos del cliente solo pueden incluir letras")    
 ]
-router.post('/', rules, clientesControler.store
+router.post('/', upload.single("imagen_cliente"), rules, clientesControler.store
     //     (req, res) =>[
         //     res.json({ok:true,msg:`Funcion para insertar un nuevo cliente, INSERT INTO clientes...`})
         // ]
     );
     
     const rules2 = [
-        body('nombre_cliente')
+        body('nombre')
             .escape()
             .notEmpty()
             .withMessage("El nombre del cliente es requerido!"),
@@ -59,7 +73,7 @@ router.post('/', rules, clientesControler.store
             .isAlpha()
             .withMessage("El estado solo incluye letras")
     ]
-router.put('/:id', rules2, clientesControler.update
+router.put('/:id', upload.single("imagen_cliente"), rules2, clientesControler.update
 //     (req, res) => {
 //     res.json({ok:true,msg:`Funcion para editar el cliente con id=${req.params.id}, UPDATE clientes WHERE id=${req.params.id}`})
 // }

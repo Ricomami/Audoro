@@ -68,10 +68,10 @@ async function store(req, res) {
     const nuevo_id = respuesta.insertId;
     //Si existe un archivo de imagen, lo renombramos con el ID
     let rutaRelativa = null;
-    if ( req.file) {
+    if (req.file) {
       const extension = path.extname(req.file.originalname);
       const nuevoNombre = `${nuevo_id}-${Date.now()}${extension}`;
-      const nuevaRuta = path.join('uploads','auditorios', nuevoNombre);
+      const nuevaRuta = path.join('uploads', 'auditorios', nuevoNombre);
       fs.renameSync(req.file.path, nuevaRuta);
       rutaRelativa = `uploads/auditorios/${nuevoNombre}`;
 
@@ -107,50 +107,52 @@ async function update(req, res) {
     const datos = req.body;
 
     // Previo a la insersión, obtenemosla imagen actual del auditorio
-        const [rows] = await c.query(
-          "SELECT imagen_auditorio FROM auditorios WHERE id_auditorio = ?",
-          [id]
-        );
-    
-        let rutaImagen = rows[0]?.imagen_auditorio || null;
-    
-        // Si viene una nueva imagen en la petición
-        if (req.file) {
-          const extension = path.extname(req.file.originalname);
-          const nuevoNombre = `${id}-${Date.now()}${extension}`;
-          const nuevaRuta = path.join("uploads", "auditorios", nuevoNombre);
-          fs.renameSync(req.file.path, nuevaRuta);
-          rutaRelativa = `uploads/auditorios/${nuevoNombre}`;
-    
-    
-          // Si había una imagen anterior, la eliminamos
-          if (rutaImagen) {
-            const rutaAbsoluta = path.resolve(rutaImagen);
-    
-            if (fs.existsSync(rutaAbsoluta)) {
-              fs.unlinkSync(rutaAbsoluta);
-              console.log("Imagen anterior eliminada:", rutaAbsoluta);
-            }
-          }
-    
-          rutaImagen = rutaRelativa;
+    const [rows] = await c.query(
+      "SELECT imagen_auditorio FROM auditorios WHERE id_auditorio = ?",
+      [id]
+    );
+
+    let rutaImagen = rows[0]?.imagen_auditorio || null;
+
+    // Si viene una nueva imagen en la petición
+    if (req.file) {
+      const extension = path.extname(req.file.originalname);
+      const nuevoNombre = `${id}-${Date.now()}${extension}`;
+      const nuevaRuta = path.join("uploads", "auditorios", nuevoNombre);
+      fs.renameSync(req.file.path, nuevaRuta);
+      rutaRelativa = `uploads/auditorios/${nuevoNombre}`;
+
+
+      // Si había una imagen anterior, la eliminamos
+      if (rutaImagen) {
+        const rutaAbsoluta = path.resolve(rutaImagen);
+
+        if (fs.existsSync(rutaAbsoluta)) {
+          fs.unlinkSync(rutaAbsoluta);
+          console.log("Imagen anterior eliminada:", rutaAbsoluta);
         }
-    
+      }
+
+      rutaImagen = rutaRelativa;
+    }
+
+    //Actualizamos todos los campos del cliente, incluyendo la imagen.
+
     const [respuesta] = await c.query(
       'UPDATE auditorios SET nombre=?, capacidad=?, direccion=?, imagen_auditorio=?, estado=? WHERE id_auditorio=?',
       [datos.nombre, datos.capacidad, datos.direccion, rutaImagen, datos.estado, id]
     );
-    res.status(200).json({ 
-      mensaje: "Auditorio actualizado correctamente.", 
+    res.status(200).json({
+      mensaje: "Auditorio actualizado correctamente.",
       filasModificadas: respuesta.affectedRows,
-    datosActualizados: {
-      id, 
-      ...datos,
-      imagen_auditorio: rutaImagen || "Sin cambios",
-    },
-   });
+      datosActualizados: {
+        id,
+        ...datos,
+        imagen_auditorio: rutaImagen || "Sin cambios",
+      },
+    });
   } catch (error) {
-    res.status(400).json({ mensaje: 'Error al actualizar auditorio', error: error.message });
+    res.status(400).json({ mensaje: 'Error al actualizar auditorio.', error: error.message });
   } finally {
     await con.desconectarDB(c);
   }
@@ -165,9 +167,9 @@ async function destroy(req, res) {
       'UPDATE auditorios SET estado=? WHERE id_auditorio=?',
       ['Inactivo', id]
     );
-    res.status(200).json({ mensaje: "Auditorio dado de baja", filasmodificadas: respuesta.affectedRows });
+    res.status(200).json({ mensaje: "Auditorio dado de baja.", filasmodificadas: respuesta.affectedRows });
   } catch (error) {
-    res.status(400).json({ mensaje: 'Error en la consulta', error: error.message });
+    res.status(400).json({ mensaje: 'Error en la consulta.', error: error.message });
   } finally {
     await con.desconectarDB(c);
   }

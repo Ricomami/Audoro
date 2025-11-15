@@ -105,7 +105,7 @@ async function update(req, res) {
     c = await con.conectarBD();
     const id = req.params.id;
     const datos = req.body;
-
+    
     // Obtener los datos actuales del artista
     const [rows] = await c.query(
       "SELECT imagen_artista FROM artistas WHERE id_artista = ?",
@@ -164,7 +164,7 @@ async function update(req, res) {
     console.error(error);
     res
       .status(400)
-      .json({ mensaje: "Error al actualizar artista", error: error.message });
+      .json({ mensaje: "Error al actualizar artista.", error: error.message });
   } finally {
     if (c) await con.desconectarDB(c);
   }
@@ -178,9 +178,9 @@ async function destroy(req, res) {
     var id = req.params.id;
     const [respuesta] = await c.query('UPDATE artistas SET estado=? WHERE id_artista=?',
       ['Inactivo', id]);
-    res.status(200).json({ mensaje: 'Artista dado de baja', datos: respuesta });
+    res.status(200).json({ mensaje: 'Artista dado de baja.', datos: respuesta });
   } catch (error) {
-    res.status(400).json({ mensaje: 'Error en la consulta', error: error.message });
+    res.status(400).json({ mensaje: 'Error en la consulta.', error: error.message });
   } finally {
     await con.desconectarDB(c);
   }
