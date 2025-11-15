@@ -5,6 +5,7 @@ const path = require('path');
 const { body, validationResult } = require('express-validator');
 // const upload = require('../app/middlewares/uploadMiddleware')
 // const Artista = require('../app/models/Artista');
+const artistasController = require('../app/controllers/artistasController');
 
 //Configurar donde se guardaran las imagenes
 const storage  = multer.diskStorage({
@@ -17,11 +18,9 @@ const storage  = multer.diskStorage({
         cb(null, file.fieldname + "-" + uniqueSuffix);
     }
 });
-
 const upload = multer({ storage });
 
 
-const artistasController = require('../app/controllers/artistasController');
 
 //INDEX - Todos los registros
 router.get('/', artistasController.index 
@@ -46,7 +45,7 @@ const rules = [
         .notEmpty()
         .withMessage("El género del artista es requerido!")
 ]
-router.post('/', upload.single("imagen"),rules, artistasController.store
+router.post('/', upload.single("imagen"), rules, artistasController.store
     //      (req, res) =>[
         //     res.json({ok:true,msg:`Funcion para insertar un nuevo artista, INSERT INTO artistas...`})
         // ]

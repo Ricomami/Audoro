@@ -1,10 +1,25 @@
 const express = require("express");
 const router = express.Router();
+const multer = require("multer");
+const path = require("path");
 const { body } = require ('express-validator');
-
 const sqlite = require("../db/sqlite");
 //Importamos nuestro controllador
 const auditoriosController = require('../app/controllers/auditoriosController'); 
+
+//Configuramos en donde se guardaran las imagenes
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "uploads/auditorios/");
+    },
+    filename: (req, file, cb) => {
+        //Usamos un identificador temporal o con ID o un Date.now()
+        const uniqueSuffix = Date.now() + "-" + path.extname(file.originalname); 
+        cb(null, file.fieldname + "-" + uniqueSuffix);
+    }
+});
+const upload = multer({ storage });
+
 
 
 router.get('/', auditoriosController.index
@@ -36,7 +51,7 @@ const rules = [
         .isInt()
         .withMessage("La capacidad solo pueden ser numeros enteros"),
 ]
-router.post('/', rules, auditoriosController.store
+router.post('/', upload.single("imagen_auditorio"), rules, auditoriosController.store
     //     (req,res)=>{
 //     res.json({ok:true,msg:`Funcion para crear un nuevo auditorio INSERT INTO auditorios...`})
 //     // res.send("CRUD funcion para insertar, INSERT INTO audiorios...")
@@ -64,7 +79,7 @@ const rules2 = [
             .isAlpha()
             .withMessage("El estado solo incluye letras")
 ]
-router.put('/:id', rules2, auditoriosController.update
+router.put('/:id', upload.single("imagen_auditorio"),  rules2, auditoriosController.update
 //     (req,res)=>{
 //     res.json({ok:true,msg:`Funcion para actualizar el auditorio con id=${req.params.id} UPDATE auditorios WHERE id=${req.params.id}`})
 //     // res.send("CRUD funcion para actualizar UPDATE auditorios WHERE id...")
@@ -78,104 +93,5 @@ router.delete('/:id', auditoriosController.destroy
 //     // res.send("CRUD funcion para eliminar, DELETE FROM auditorios WHERE id)...")
 // }
 );
-
-
-
-//LEER MYSQL
-router.get("/leer", (req, res) => {
-    const sql = "SELECT * FROM auditorios";
-
-    db.all("SELECT * FROM auditorios",[], (err,rows) => {
-        if(err) return res.status(500).json({error: "Error en MySQL", detalle: err.message});
-        res.json(rows);
-    });
-});
-
-// //LEER SQLite
-// router.get("/leer", (req, res) => {
-//     sqlite.query("SELECT * FROM auditorios",(err,rows) => {
-//         if(err) return res.status(500).json({error: "Error en MySQL"});
-//         res.json(rows);
-//     });
-// });
-
-
-//CREATE
-router.post("/crear", (req, res) => {
-    const {nombre, capacidad, ubicacion} = req.body;
-
-    //Insertar en MySQL
-    mysql.query(
-        "INSERT INTO auditorios (nombre, capacidad, ubicacion) VALUES (?,?,?)",
-        [nombre, capacidad, ubicacion],
-        (err, result) => {
-            if (err) return res.status(500).json({error:"Error MySQL"});
-
-            //Insertar en SQLite
-            sqlite.run(
-                "INSERT INTO auditorios(nombre, capacidad, ubicacion) VALUES (?,?,?)",
-                [nombre, capacidad, ubicacion],
-                (errSqlite) => {
-                    if(errSqlite) console.error("Error SQLite: ", errSqlite);
-                    // Respuesta final UNA sola vez
-                    res.json({ok:true, id:result.insertId, msg:"Auditorio  en ambas BD"});
-                }
-            );
-        }
-    );
-});
-
-
-//UPDATE
-router.put("/actualizar/:id",(req, res) => {
-    const {id} = req.params;
-    const datos = req.body;
-
-    //Actualizar en MySQL
-    mysql.query(
-        "UPDATE auditorios SET nombre=?, capacidad=?, direccion=? WHERE id_auditorio=?",
-        [datos.nombre, datos.capacidad, datos.direccion, id],
-        (err, result) => {
-            if(err) return res.status(500).json({ error: "Error MySQL"});
-        }
-    );
-
-    //Actualizar en SQLite
-    sqlite.run(
-        "UPDATE auditorios SET nombre=?, capacidad=?, ubicacion=? WHERE id_auditorio=?",
-        [nombre, capacidad, ubicacion, id],
-        (errSqlite) => {
-            if(errSqlite) console.error("Error SQLite: ", errSqlite);
-            res.json({ok:true, msg:"Auditorio actualizado en ambas Bases de Datos"});
-        }
-    );
-
-});
-
-
-// DELETE
-router.delete("/eliminar/:id", (req, res) => {
-  const { id } = req.params;
-
-  // MySQL
-  mysql.query(
-    "DELETE FROM auditorios WHERE id_auditorio=?",
-    [id],
-    (err, result) => {
-      if (err) return res.status(500).json({ error: "Error MySQL" });
-    }
-  );
-
-  // SQLite
-  sqlite.run(
-    "DELETE FROM auditorios WHERE id_auditorio=?",
-    [id],
-    (err) => {
-      if (err) console.error("Error SQLite:", err);
-    }
-  );
-
-  res.json({ ok: true, msg: "Auditorio eliminado en ambas BD" });
-});
 
 module.exports=router;
