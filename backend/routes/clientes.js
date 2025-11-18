@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
+const Cliente = require('../app/models/Cliente');
 const { body } = require('express-validator');
 
 const clientesControler = require('../app/controllers/clientesController')

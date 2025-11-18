@@ -3,8 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const { body, validationResult } = require('express-validator');
-// const upload = require('../app/middlewares/uploadMiddleware')
-// const Artista = require('../app/models/Artista');
+const Artista = require('../app/models/Artista');
 const artistasController = require('../app/controllers/artistasController');
 
 //Configurar donde se guardaran las imagenes

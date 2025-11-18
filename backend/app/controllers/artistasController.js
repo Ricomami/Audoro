@@ -1,5 +1,6 @@
 const con = require('../../db/mysql');
 const { validationResult } = require('express-validator');
+const Artista = require('../models/Artista');
 const path = require('path');
 const fs = require('fs');
 

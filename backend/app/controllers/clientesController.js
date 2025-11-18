@@ -143,7 +143,7 @@ async function update(req, res) {
         );
 
         res.status(200).json({
-            mensaje: 'Artista actualizado correctamente',
+            mensaje: 'Cliente actualizado correctamente',
             filasModificadas: respuesta.affectedRows,
             datosActualizados: {
                 id,
@@ -153,7 +153,7 @@ async function update(req, res) {
         });
     } catch (error) {
         console.error(error);
-        res.status(400).json({ mensaje: 'Error al actualizar cliente.', error: error.message });
+        res.status(400).json({ mensaje: 'Error al actualizar al cliente.', error: error.message });
     } finally {
         await con.desconectarDB(c);
     }
