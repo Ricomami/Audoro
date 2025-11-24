@@ -1,8 +1,23 @@
 const express = require('express');
 const router = express.Router();
-const { body } = require('express-validator');
-
+const multer = require('multer');
+const path = require ('path');
+const { body, validationResult } = require('express-validator');
+const Evento = require ('../app/models/Evento');
 const eventosController = require('../app/controllers/eventosController');
+
+//Configuramos donde guardaremos las imagenes
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "uploads/eventos/");
+    },
+    filename: (req, file, cb) => {
+        //Usamos un identificador temporal usando o el ID o un Date.now()
+        const uniqueSuffix = Date.now() + "-" + path.extname(file.originalname);
+        cb(null, file.fieldname + "-" + uniqueSuffix);
+    }
+});
+const upload = multer ({ storage });
 
 //Podemos ver
 router.get('/', eventosController.index
@@ -40,7 +55,7 @@ const rules = [
         .withMessage("El id del evento solo puede ser un numero entero"),
 ]
 
-router.post('/', rules, eventosController.store
+router.post('/', upload.single("imagen_evento"), rules, eventosController.store
 //     (req, res) =>[
 //     res.json({ok:true,msg:`Funcion para insertar un nuevo evento, INSERT INTO EVENTOS...`})
 // ]
@@ -54,7 +69,7 @@ const rules2 = [
     body('fecha')
         .escape()
         .notEmpty()
-        .withMessage("la fecha es requerida!"),
+        .withMessage("La fecha es requerida!"),
     body('hora_fin')
         .escape()
         .notEmpty()
@@ -74,7 +89,7 @@ const rules2 = [
             .isAlpha()
             .withMessage("El estado solo incluye letras")
 ]
-router.put('/:id', rules2, eventosController.update
+router.put('/:id', upload.single("imagen_evento"), rules2, eventosController.update
 //     (req, res) => {
 //     res.json({ok:true,msg:`Funcion para actualizar el evento con id=${req.params.id}, UPDATE INTO eventos WHERE id=${req.params.id}`})
 // }

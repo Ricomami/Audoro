@@ -158,7 +158,7 @@ async function update(req, res) {
       datosActualizados: {
         id,
         ...datos,
-        imagen: rutaImagen || "Sin cambios",
+        imagen_artista: rutaImagen || "Sin cambios",
       },
     });
   } catch (error) {

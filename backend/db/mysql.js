@@ -64,5 +64,4 @@ const sequelize = new Sequelize('auditorio', 'root', '',{
     dialect: 'mysql'
 });
 
-module.exports = sequelize;
-module.exports ={conectarBD, desconectarDB};
+module.exports ={ sequelize, conectarBD, desconectarDB };

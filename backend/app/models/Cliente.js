@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../../db/mysql');
+const {sequelize} = require('../../db/mysql');
 
 const Cliente = sequelize.define('Cliente', {
     id_cliente: { 
@@ -25,45 +25,45 @@ const Cliente = sequelize.define('Cliente', {
 module.exports = Cliente;
 
 
-//MODELOS CON MONGOOSE
-const mongoose = require("mongoose");
+// //MODELOS CON MONGOOSE
+// const mongoose = require("mongoose");
 
-const clienteSchema = new mongoose.Schema({
-    nombre_cliente: {
-        type: String,
-        required: true,
-        trim: true
-    },
-    apellido_pat: {
-        type: String,
-        required: true,
-        trim: true
-    },
-    apellido_mat: {
-        type: String,
-        trim: true
-    },
-    correo: {
-        type: String,
-        trim: true,
-        unique: true,
-        match: [/^[\w.-]+@[\w.-]+\.\w+$/, "Correo invalido"]
-    },
-    telefono: {
-        type: String,
-        trim: true,
-        minlength: 10,
-        maxlength: 10,
-        match: [/^\d{10}$/, "El teléfono debe teer 10 dígitos."]
-    },
-    imagen_cliente:{
-        type: String
-    },
-    estado: {
-        type: String,
-        enum: ['Activo', 'Inactivo', 'Suspendido'],
-        default: 'Activo'
-    },
-    }, { timestamps: true });
+// const clienteSchema = new mongoose.Schema({
+//     nombre_cliente: {
+//         type: String,
+//         required: true,
+//         trim: true
+//     },
+//     apellido_pat: {
+//         type: String,
+//         required: true,
+//         trim: true
+//     },
+//     apellido_mat: {
+//         type: String,
+//         trim: true
+//     },
+//     correo: {
+//         type: String,
+//         trim: true,
+//         unique: true,
+//         match: [/^[\w.-]+@[\w.-]+\.\w+$/, "Correo invalido"]
+//     },
+//     telefono: {
+//         type: String,
+//         trim: true,
+//         minlength: 10,
+//         maxlength: 10,
+//         match: [/^\d{10}$/, "El teléfono debe teer 10 dígitos."]
+//     },
+//     imagen_cliente:{
+//         type: String
+//     },
+//     estado: {
+//         type: String,
+//         enum: ['Activo', 'Inactivo', 'Suspendido'],
+//         default: 'Activo'
+//     },
+//     }, { timestamps: true });
 
-module.exports = mongoose.model("Cliente", clienteSchema);
+// module.exports = mongoose.model("Cliente", clienteSchema);

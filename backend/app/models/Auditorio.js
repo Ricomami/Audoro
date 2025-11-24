@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../../db/mysql');
+const {sequelize} = require('../../db/mysql');
 
 const Auditorio = sequelize.define('Auditorio', {
     id_auditorio: { 
@@ -24,33 +24,33 @@ const Auditorio = sequelize.define('Auditorio', {
 
 module.exports = Auditorio;
 
-//MODELO CON MONGOOSE 
-const mongoose = require("mongoose");
+// //MODELO CON MONGOOSE 
+// const mongoose = require("mongoose");
 
-const auditorioSchema = new mongoose.Schema({
-  nombre_auditorio: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true
-  },
-  capacidad: {
-    type: Number,
-    required: true,
-    min: [0, "La capacidad del auditorio no puede ser negativa."]
-  },
-  direccion: {
-    type: String,
-    trim: true
-  },
-  imagen_auditorio: {
-    type: String,
-  },
-  estado: {
-    type: String,
-    enum: ['Activo', 'Inactivo', 'Pendiente','Archivado'],
-    default: 'Activo',
-  }
-}, { timestamps: true });
+// const auditorioSchema = new mongoose.Schema({
+//   nombre_auditorio: {
+//     type: String,
+//     required: true,
+//     unique: true,
+//     trim: true
+//   },
+//   capacidad: {
+//     type: Number,
+//     required: true,
+//     min: [0, "La capacidad del auditorio no puede ser negativa."]
+//   },
+//   direccion: {
+//     type: String,
+//     trim: true
+//   },
+//   imagen_auditorio: {
+//     type: String,
+//   },
+//   estado: {
+//     type: String,
+//     enum: ['Activo', 'Inactivo', 'Pendiente','Archivado'],
+//     default: 'Activo',
+//   }
+// }, { timestamps: true });
 
-module.exports = mongoose.model("Auditorio", auditorioSchema);
+// module.exports = mongoose.model("Auditorio", auditorioSchema);

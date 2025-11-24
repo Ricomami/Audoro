@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../../db/mysql');
+const {sequelize} = require('../../db/mysql');
 const Asiento = require('./Asiento');
 const Funcion = require('./Funcion'); // aún falta crear, pero ya preparamos
 const Cliente = require('./Cliente');
@@ -41,47 +41,47 @@ Pago.hasMany(Entrada, { foreignKey: 'pago_id' });
 
 module.exports = Entrada;
 
-//MODELO CON MONGOOSE
+// //MODELO CON MONGOOSE
 
-const mongoose = require("mongoose");
+// const mongoose = require("mongoose");
 
-const entradaSchema = new mongoose.Schema({
-    // id_entrada: {
-    //     type: Number,
-    //     required: true, 
-    //     unique: true
-    // },
-    asiento_id:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Asiento", 
-        required: true,
-    },
-    pago_id:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Pago",
-        required: true
-    },
-    funcion_id:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Funcion",
-        required: true
-    },
-    cliente_id:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Cliente",
-        required: true
-    },
-    precio_final:{
-        type: Number,
-        min: [0, "El precio no puede ser negativo"]
-    },
-    estado: {
-        type: String,
-        enum: ['Activo','Inactivo','Pendiente','Archivado'],
-        default: 'Activo'
-    }
-}, {
-    timestamps: true
-});
+// const entradaSchema = new mongoose.Schema({
+//     // id_entrada: {
+//     //     type: Number,
+//     //     required: true, 
+//     //     unique: true
+//     // },
+//     asiento_id:{
+//         type: mongoose.Schema.Types.ObjectId,
+//         ref: "Asiento", 
+//         required: true,
+//     },
+//     pago_id:{
+//         type: mongoose.Schema.Types.ObjectId,
+//         ref: "Pago",
+//         required: true
+//     },
+//     funcion_id:{
+//         type: mongoose.Schema.Types.ObjectId,
+//         ref: "Funcion",
+//         required: true
+//     },
+//     cliente_id:{
+//         type: mongoose.Schema.Types.ObjectId,
+//         ref: "Cliente",
+//         required: true
+//     },
+//     precio_final:{
+//         type: Number,
+//         min: [0, "El precio no puede ser negativo"]
+//     },
+//     estado: {
+//         type: String,
+//         enum: ['Activo','Inactivo','Pendiente','Archivado'],
+//         default: 'Activo'
+//     }
+// }, {
+//     timestamps: true
+// });
 
-module.exports = mongoose.model("Entrada", entradaSchema);
+// module.exports = mongoose.model("Entrada", entradaSchema);
