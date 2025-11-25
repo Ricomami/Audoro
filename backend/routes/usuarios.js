@@ -1,7 +1,25 @@
 const express = require('express');
 const router = express.Router();
-const { body } = require('express-validator');
+const multer = require('multer');
+const path = require('path');
+const { body, validationResult } = require('express-validator');
+const Usuario = require('../app/models/Usuario');
 const usuariosController = require('../app/controllers/usuariosController')
+
+//Configuramos donde se guardaran las imagenes
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "uploads/usuarios/");
+    },
+    filename: (req, file, cb) => {
+        //Usamos un identificador temporal o con ID o un Date.now()
+        const uniqueSuffix = Date.now() + "-" + path.extname(file.originalname);
+        cb(null, file.fieldname + "-" + uniqueSuffix);
+    }
+});
+const upload = multer({ storage });
+
+
 
 router.get('/', usuariosController.index
 //     (req,res) =>{
@@ -21,10 +39,10 @@ const rules = [
         .escape()
         .notEmpty()
         .withMessage("El nombre del usuario es requerido!"),
-        body('contraseña')
+    body('password')
         .escape()
         .notEmpty()
-        .withMessage("La contraseña del usuario es requerida")
+        .withMessage("El campo 'password' del usuario es requerido")
         .bail()
         .isStrongPassword({
             minLenght: 6,
@@ -39,7 +57,7 @@ const rules = [
         .notEmpty()
         .withMessage("El rol del usuario es requerido!"),
 ]
-router.post('/', rules, usuariosController.store
+router.post('/', upload.single("imagen_usuario"), rules, usuariosController.store
     //     (req,res)=>{
         //     res.json({ok:true,msg:`Funcion para insertar un nuevo usuario, INSERT INTO usuarios...`})
         // }
@@ -50,10 +68,10 @@ router.post('/', rules, usuariosController.store
             .escape()
             .notEmpty()
             .withMessage("El nombre del usuario es requerido!"),
-            body('contraseña')
+            body('password')
             .escape()
             .notEmpty()
-            .withMessage("La contraseña del usuario es requerida")
+            .withMessage("El campo 'password' del usuario es requerido")
             .bail()
             .isStrongPassword({
                 minLenght: 6,
@@ -75,7 +93,7 @@ router.post('/', rules, usuariosController.store
             .isAlpha()
             .withMessage("El estado solo incluye letras")
     ]
-router.put('/:id', rules2, usuariosController.update
+router.put('/:id', upload.single("imagen_usuario"), rules2, usuariosController.update
 //     (req,res)=>{
 //     res.json({ok:true,msg:`Funcion para actualizar el usuario con id=${req.params.id}, UPDATE usuarios WHERE id=${req.params.id}`})
 // }

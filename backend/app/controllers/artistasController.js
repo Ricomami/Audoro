@@ -86,7 +86,7 @@ async function store(req, res) {
 
     res.status(201).json({ datos: nuevoArtista, idCreada: nuevo_id });
   } catch (error) {
-    res.status(400).json({ mensaje: 'Error al crear el artista', error: error.message });
+    res.status(400).json({ mensaje: 'Error al crear el artista.', error: error.message });
   } finally {
     await con.desconectarDB(c);
   }
