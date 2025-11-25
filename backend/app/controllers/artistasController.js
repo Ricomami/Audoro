@@ -94,7 +94,7 @@ async function store(req, res) {
 
 
 async function update(req, res) {
-  
+
   const result = validationResult(req);
   console.log(result);
   if (!result.isEmpty()) {
@@ -106,7 +106,7 @@ async function update(req, res) {
     c = await con.conectarBD();
     const id = req.params.id;
     const datos = req.body;
-    
+
     // Obtener los datos actuales del artista
     const [rows] = await c.query(
       "SELECT imagen_artista FROM artistas WHERE id_artista = ?",

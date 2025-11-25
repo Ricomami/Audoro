@@ -1,8 +1,25 @@
 const express = require('express');
 const router = express.Router();
-const { body } = require('express-validator');
-
+const multer = require('multer');
+const path = require('path');
+const { body, validationResult } = require('express-validator');
+const Seccion = require('../app/models/Seccion');
 const seccionesController = require('../app/controllers/seccionesController');
+
+//Configurar donde se guardaran las imagenes
+const storage  = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "uploads/secciones/");
+    },
+    filename: (req, file, cb) => {
+        //Usamos un identificador temporal o con ID o un Date.now()
+        const uniqueSuffix = Date.now() + "-" + path.extname(file.originalname); 
+        cb(null, file.fieldname + "-" + uniqueSuffix);
+    }
+});
+const upload = multer({ storage });
+
+
 
 router.get('/', seccionesController.index
 //     (req, res) => {
@@ -30,7 +47,7 @@ const rules = [
         .isInt()
         .withMessage("El id del auditorio de esta seccion solo puede ser un numero entero")
 ]
-router.post('/', rules, seccionesController.store
+router.post('/', upload.single('imagen_seccion'), rules, seccionesController.store
     //     (req, res) =>[
         //     res.json({ok:true,msg:`Funcion para insertar una nueva seccion, INSERT INTO secciones...`})
         // ]
@@ -56,7 +73,7 @@ router.post('/', rules, seccionesController.store
             .isAlpha()
             .withMessage("El estado solo incluye letras")
     ]
-router.put('/:id', rules2, seccionesController.update
+router.put('/:id', upload.single('imagen_seccion'), rules2, seccionesController.update
 //     (req, res) => {
 //     res.json({ok:true,msg:`Funcion para actualizar la seccion con id=${req.params.id}, UPDATE secciones WHERE id=${req.params.id}`})
 // }
