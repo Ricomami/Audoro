@@ -106,7 +106,7 @@ async function update(req, res) {
     const id = req.params.id;
     const datos = req.body;
 
-    // Previo a la insersión, obtenemosla imagen actual del auditorio
+    // Obtenemos la imagen actual de el auditorio
     const [rows] = await c.query(
       "SELECT imagen_auditorio FROM auditorios WHERE id_auditorio = ?",
       [id]
