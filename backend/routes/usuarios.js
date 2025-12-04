@@ -39,19 +39,19 @@ const rules = [
         .escape()
         .notEmpty()
         .withMessage("El nombre del usuario es requerido!"),
-    body('password')
-        .escape()
-        .notEmpty()
-        .withMessage("El campo 'password' del usuario es requerido")
-        .bail()
-        .isStrongPassword({
-            minLenght: 6,
-            minLowercase: 1,
-            minUppercase: 1,
-            minNumbers: 1,
-            minSymbols: 1
-        })
-        .withMessage("La contraseña debe de tener por lo menos 6 caracteres, y al menos una minúscula, una mayúscula, un número y un símbolo"),
+    // body('password')
+    //     .escape()
+    //     .notEmpty()
+    //     .withMessage("El campo 'password' del usuario es requerido")
+    //     .bail()
+    //     .isStrongPassword({
+    //         minLenght: 6,
+    //         minLowercase: 1,
+    //         minUppercase: 1,
+    //         minNumbers: 1,
+    //         minSymbols: 1
+    //     })
+    //     .withMessage("La contraseña debe de tener por lo menos 6 caracteres, y al menos una minúscula, una mayúscula, un número y un símbolo"),
     body('rol')
         .escape()
         .notEmpty()
@@ -68,19 +68,19 @@ router.post('/', upload.single("imagen_usuario"), rules, usuariosController.stor
             .escape()
             .notEmpty()
             .withMessage("El nombre del usuario es requerido!"),
-            body('password')
-            .escape()
-            .notEmpty()
-            .withMessage("El campo 'password' del usuario es requerido")
-            .bail()
-            .isStrongPassword({
-                minLenght: 6,
-                minLowercase: 1,
-                minUppercase: 1,
-                minNumbers: 1,
-                minSymbols: 1
-            })
-            .withMessage("La contraseña debe de tener por lo menos 6 caracteres, y al menos una minúscula, una mayúscula, un número y un símbolo"),
+            // body('password')
+            // .escape()
+            // .notEmpty()
+            // .withMessage("El campo 'password' del usuario es requerido")
+            // .bail()
+            // .isStrongPassword({
+            //     minLenght: 6,
+            //     minLowercase: 1,
+            //     minUppercase: 1,
+            //     minNumbers: 1,
+            //     minSymbols: 1
+            // })
+            // .withMessage("La contraseña debe de tener por lo menos 6 caracteres, y al menos una minúscula, una mayúscula, un número y un símbolo"),
         body('rol')
             .escape()
             .notEmpty()

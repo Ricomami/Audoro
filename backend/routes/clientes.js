@@ -42,14 +42,7 @@ const rules = [
     body('apellido_pat')
         .escape()
         .notEmpty()
-        .withMessage("El apellido paterno del clienete es requerido!")
-        .bail()
-        .isAlpha()
-        .withMessage("Los apellidos del cliente solo pueden incluir letras"),
-    body('apellido_mat')
-        .bail()
-        .isAlpha()
-        .withMessage("Los apellidos del cliente solo pueden incluir letras")    
+        .withMessage("El apellido paterno del clienete es requerido!"),
 ]
 router.post('/', upload.single("imagen_cliente"), rules, clientesControler.store
     //     (req, res) =>[
