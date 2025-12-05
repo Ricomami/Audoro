@@ -41,6 +41,7 @@ const clienteSchema = new mongoose.Schema({
         enum: ['Activo', 'Inactivo', 'Suspendido'],
         default: 'Activo'
     },
-}, { timestamps: true });
+}, { timestamps: true,
+    versionKey: false  });
 
-module.exports = mongoose.model("Cliente", clienteSchema);
+module.exports = mongoose.model("Cliente", clienteSchema, 'clientes');

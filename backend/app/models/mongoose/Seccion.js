@@ -28,6 +28,7 @@ const seccionSchema = new mongoose.Schema ({
         enum:  ['Activo','Inactivo','Pendiente','Archivado'],
         default: 'Activo'
     }
-}, {timestamps: true});
+}, {timestamps: true,
+    versionKey: false });
 
-module.exports = mongoose.model("Seccion", seccionSchema);
+module.exports = mongoose.model("Seccion", seccionSchema, 'secciones');

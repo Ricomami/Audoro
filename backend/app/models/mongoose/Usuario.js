@@ -12,7 +12,7 @@ const usuarioSchema = new mongoose.Schema({
         unique: true,
         trim: true
     },
-    contraseña: {
+    password: {
         type: String,
         required: true,
         trim: true,
@@ -30,6 +30,8 @@ const usuarioSchema = new mongoose.Schema({
         enum: ['Activo', 'Inactivo', 'Pendiente', 'Suspendido', 'Archivado'],
         default: 'Activo'
     }
-}, { timestamps: true });
+}, { timestamps: true,
+    versionKey: false 
+ });
 
-module.exports = mongoose.model("Usuario", usuarioSchema);
+module.exports = mongoose.model("UsuarioMongo", usuarioSchema, 'usuarios');

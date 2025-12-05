@@ -2,29 +2,26 @@ const { validationResult } = require('express-validator');
 const path = require('path');
 const fs = require('fs');
 
-// 1. IMPORTAMOS AMBOS MODELOS
-// Renombramos para no confundirnos
-const UsuarioSQL = require('../../models/sql/Usuario'); 
-const UsuarioMongo = require('../../models/nosql/Usuario');
+// Importamos los Modelos
+const UsuarioSQL = require('../models/sql/Usuario'); 
+const UsuarioMongo = require('../models/mongoose/Usuario'); 
 
-// Helper para borrar imagen (reutilizable)
+// Helper para borrar imagen física (reutilizable)
 const borrarImagen = (ruta) => {
     if (ruta && fs.existsSync(path.resolve(ruta))) {
         fs.unlinkSync(path.resolve(ruta));
     }
 };
 
-// --- MÉTODO INDEX (Lectura con Sequelize) ---
-// Es mucho más corto que tu versión con raw SQL
+// --- INDEX (Lectura SQL) ---
 async function index(req, res) {
     try {
         const baseUrl = `${req.protocol}://${req.get('host')}`;
         
-        // Sequelize: findAll reemplaza a "SELECT * FROM..."
         const usuarios = await UsuarioSQL.findAll();
 
         const datosTransformados = usuarios.map(u => {
-            const usuario = u.toJSON(); // Convertir instancia a objeto plano
+            const usuario = u.toJSON();
             return {
                 ...usuario,
                 imagen_usuario: usuario.imagen_usuario
@@ -39,13 +36,12 @@ async function index(req, res) {
     }
 }
 
-// --- MÉTODO SHOW (Lectura con Sequelize) ---
+// --- SHOW (Lectura SQL) ---
 async function show(req, res) {
     try {
         const baseUrl = `${req.protocol}://${req.get('host')}`;
         const id = req.params.id;
 
-        // Sequelize: findByPk busca por Primary Key
         const usuarioInstance = await UsuarioSQL.findByPk(id);
 
         if (!usuarioInstance) {
@@ -63,8 +59,9 @@ async function show(req, res) {
     }
 }
 
-// --- MÉTODO STORE (LA DEMOSTRACIÓN DE DOBLE ESCRITURA) ---
+// --- STORE (Creación Dual - SQL y Mongo) ---
 async function store(req, res) {
+    // 1. Validaciones de Express Validator
     const result = validationResult(req);
     if (!result.isEmpty()) {
         return res.status(422).json({ errors: result.array() });
@@ -74,18 +71,17 @@ async function store(req, res) {
     let rutaRelativa = null;
 
     try {
-        // 1. Guardar primero en MySQL con Sequelize
-        // Esto te genera el ID relacional que podrías necesitar
+        // 2. Crear en MySQL (Sequelize)
         const nuevoUsuarioSQL = await UsuarioSQL.create({
             nombre_usuario: datos.nombre_usuario,
-            contraseña: datos.password, // Asegúrate que tu modelo SQL tenga este campo mapeado
+            password: datos.password, 
             rol: datos.rol,
             estado: datos.estado
         });
         
-        const nuevo_id = nuevoUsuarioSQL.id_usuario; // Asumiendo que esa es tu PK
+        const nuevo_id = nuevoUsuarioSQL.id_usuario;
 
-        // 2. Manejo de Imagen (igual que tenías, pero usando el objeto de Sequelize)
+        // 3. Manejo de Imagen
         if (req.file) {
             const extension = path.extname(req.file.originalname);
             const nuevoNombre = `${nuevo_id}-${Date.now()}${extension}`;
@@ -94,24 +90,22 @@ async function store(req, res) {
             fs.renameSync(req.file.path, nuevaRuta);
             rutaRelativa = `uploads/usuarios/${nuevoNombre}`;
 
-            // Actualizamos el registro SQL con la ruta
+            // Actualizar la ruta en el objeto SQL creado
             nuevoUsuarioSQL.imagen_usuario = rutaRelativa;
             await nuevoUsuarioSQL.save();
         }
 
-        // 3. AQUÍ LA "TRAMPA": Guardar TAMBIÉN en Mongo (Mongoose)
-        // Usamos los mismos datos para crear un documento espejo
-        // Nota: En Mongo no definimos el ID manual usualmente, dejamos que cree su _id
+        // 4. Crear en MongoDB (Espejo)
+        // Demostramos la integración guardando el ID de SQL
         const nuevoUsuarioMongo = await UsuarioMongo.create({
-            sql_ref_id: nuevo_id, // Tip: Guarda la ID de SQL en Mongo para referencia futura
+            id_sql: nuevo_id,          // <--- CAMPO CLAVE PARA VINCULAR
             nombre_usuario: datos.nombre_usuario,
-            contraseña: datos.password,
+            password: datos.password,
             rol: datos.rol,
             estado: datos.estado,
-            imagen_usuario: rutaRelativa // Guardamos la misma ruta de imagen
+            imagen_usuario: rutaRelativa
         });
 
-        // Respuesta
         res.status(200).json({ 
             mensaje: "Usuario creado en MySQL y MongoDB exitosamente",
             mysql_data: nuevoUsuarioSQL,
@@ -119,49 +113,108 @@ async function store(req, res) {
         });
 
     } catch (error) {
-        // Si falla, idealmente deberías borrar la imagen si se subió
+        // Rollback manual de imagen si falla
         if(rutaRelativa) borrarImagen(rutaRelativa);
+        console.error(error); // Ver error en consola de servidor
         res.status(400).json({ mensaje: 'Error al crear el usuario.', error: error.message });
     }
 }
 
-// --- MÉTODO UPDATE (Simplificado con Sequelize) ---
+// --- UPDATE (Actualización Dual) ---
 async function update(req, res) {
-    // ... validaciones ...
+    const result = validationResult(req);
+    if (!result.isEmpty()) {
+        return res.status(422).json({ errors: result.array() });
+    }
+
     const id = req.params.id;
     const datos = req.body;
 
     try {
+        // Buscar usuario SQL
         const usuarioSQL = await UsuarioSQL.findByPk(id);
         if(!usuarioSQL) return res.status(404).json({mensaje: "Usuario no encontrado"});
 
         let rutaImagen = usuarioSQL.imagen_usuario;
 
+        // Si viene nueva imagen
         if (req.file) {
-             // Lógica de reemplazo de imagen...
-             // ...
-             // Al final actualizas rutaImagen
+            const extension = path.extname(req.file.originalname);
+            const nuevoNombre = `${id}-${Date.now()}${extension}`;
+            const nuevaRuta = path.join("uploads", "usuarios", nuevoNombre);
+            
+            fs.renameSync(req.file.path, nuevaRuta);
+            
+            // Borrar imagen vieja si existía
+            if (rutaImagen) borrarImagen(rutaImagen);
+
+            rutaImagen = `uploads/usuarios/${nuevoNombre}`;
         }
 
         // Actualizar SQL
         await usuarioSQL.update({
             nombre_usuario: datos.nombre_usuario,
-            contraseña: datos.password,
+            password: datos.password,
             rol: datos.rol,
             estado: datos.estado,
             imagen_usuario: rutaImagen
         });
 
-        // Opcional: Actualizar Mongo también (búscalo por sql_ref_id o nombre)
-        // await UsuarioMongo.findOneAndUpdate({ sql_ref_id: id }, { ...datos ... });
+        // Actualizar Mongo (Sincronización)
+        // Buscamos por el id_sql que guardamos al crear
+        await UsuarioMongo.findOneAndUpdate(
+            { id_sql: id }, 
+            { 
+                nombre_usuario: datos.nombre_usuario,
+                password: datos.password,
+                rol: datos.rol,
+                estado: datos.estado,
+                imagen_usuario: rutaImagen
+            }
+        );
 
-        res.status(200).json({ mensaje: "Usuario actualizado" });
+        res.status(200).json({ 
+            mensaje: "Usuario actualizado correctamente",
+            datos: usuarioSQL 
+        });
 
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(400).json({ mensaje: 'Error al actualizar', error: error.message });
     }
 }
 
-// ... destroy similar con usuarioSQL.update({ estado: 'Inactivo' }) ...
+// --- DESTROY (Borrado Lógico Dual) ---
+async function destroy(req, res) {
+    const id = req.params.id;
+
+    try {
+        // 1. Buscar en SQL
+        const usuarioSQL = await UsuarioSQL.findByPk(id);
+        
+        if (!usuarioSQL) {
+            return res.status(404).json({ mensaje: 'Usuario no encontrado' });
+        }
+
+        // 2. Borrado Lógico en SQL (Update estado)
+        // .update() actualiza automáticamente el campo updated_at
+        await usuarioSQL.update({ estado: 'Inactivo' });
+
+        // 3. Borrado Lógico en Mongo (Para mantener coherencia)
+        await UsuarioMongo.findOneAndUpdate(
+            { id_sql: id },
+            { estado: 'Inactivo' }
+        );
+
+        res.status(200).json({ 
+            mensaje: 'Usuario dado de baja con borrado lógico', 
+            usuario: usuarioSQL 
+        });
+
+    } catch (error) {
+        res.status(400).json({ mensaje: 'Error al eliminar', error: error.message });
+    }
+    // NOTA: Ya no necesitamos 'finally' para cerrar conexión, 
+    // Sequelize gestiona el pool automáticamente.
+}
 
 module.exports = { index, show, store, update, destroy };

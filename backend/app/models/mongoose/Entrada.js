@@ -36,7 +36,8 @@ const entradaSchema = new mongoose.Schema({
         default: 'Activo'
     }
 }, {
-    timestamps: true
+    timestamps: true,
+    versionKey: false 
 });
 
-module.exports = mongoose.model("Entrada", entradaSchema);
+module.exports = mongoose.model("Entrada", entradaSchema, 'entradas');

@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 
-const conectarBD = async () => {
+const dbConectarMongo = async () => {
     try {
-      await mongoose.connect (process.env.MONGO_URL);
+      await mongoose.connect(process.env.MONGO_URL);
     console.log("✅ Conectado a MongoDB Atlas correctamente");
   } catch (error) {
     console.error("❌ Error al conectar a MongoDB Atlas:", error);
@@ -13,7 +13,7 @@ const conectarBD = async () => {
 
 const conectarCompass = async () => {
     try {
-      await mongoose.connect (process.env.MONGO_LOCAL);
+      await mongoose.createConnection(process.env.MONGO_LOCAL);
     console.log("✅ Conectado a Mongo Compass correctamente");
   } catch (error) {
     console.error("❌ Error al conectar a Mongo Compass:", error);
@@ -21,4 +21,4 @@ const conectarCompass = async () => {
   }
 };
 
-module.exports = {conectarBD, conectarCompass};
+module.exports = {dbConectarMongo, conectarCompass};

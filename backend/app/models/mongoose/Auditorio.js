@@ -29,6 +29,7 @@ const auditorioSchema = new mongoose.Schema({
         enum: ['Activo', 'Inactivo', 'Pendiente', 'Archivado'],
         default: 'Activo',
     }
-}, { timestamps: true });
+}, { timestamps: true,
+    versionKey: false  });
 
-module.exports = mongoose.model("Auditorio", auditorioSchema);
+module.exports = mongoose.model("Auditorio", auditorioSchema, 'auditorios');

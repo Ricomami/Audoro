@@ -30,6 +30,7 @@ const asientoSchema = new mongoose.Schema({
         enum: ['Activo', 'Inactivo', 'Pendiente'],
         default: 'Activo'
     }
-}, { timestamps: true });
+}, { timestamps: true,
+    versionKey: false  });
 
-module.exports = mongoose.model("Asiento", asientoSchema);
+module.exports = mongoose.model("Asiento", asientoSchema, 'asientos');

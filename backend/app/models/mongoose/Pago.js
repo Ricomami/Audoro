@@ -35,6 +35,7 @@ const pagoSchema = new mongoose.Schema({
         enum: ['Activo','Inactivo','Pendiente','Suspendido','Archivado'],
         default: 'Activo'
     }
-}, {timestamps: true});
+}, {timestamps: true,
+    versionKey: false });
 
-module.exports = mongoose.model("Pago", pagoSchema);
+module.exports = mongoose.model("Pago", pagoSchema, 'pagos');

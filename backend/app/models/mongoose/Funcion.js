@@ -26,6 +26,7 @@ const funcionSchema = mongoose.Schema({
         enum: ['Activo','Inactivo','Pendiente','Suspendido'],
         default: 'Activo'
     }
-},  { timestamps: true});
+},  { timestamps: true,
+    versionKey: false });
 
-module.exports = mongoose.model("Funcion", funcionSchema);
+module.exports = mongoose.model("Funcion", funcionSchema, 'funciones');

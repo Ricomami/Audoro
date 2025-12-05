@@ -15,8 +15,9 @@ const eventos_artistaSchema = new mongoose.Schema({
     enum: ['Activo','Inactivo','Pendiente','Archivado'],
     default: 'Activo'
   }
-}, { timestamps: true });
+}, { timestamps: true,
+    versionKey: false  });
 
 eventos_artistaSchema.index({ evento_id: 1, artista_id: 1 }, { unique: true });
 
-module.exports = mongoose.model("Eventos_artista", eventos_artistaSchema);
+module.exports = mongoose.model("Eventos_artista", eventos_artistaSchema, 'eventos_artistas');

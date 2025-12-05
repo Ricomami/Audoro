@@ -29,6 +29,7 @@ const artistaSchema = new mongoose.Schema({
         enum: ['Activo', 'Inactivo', 'Pendiente', 'Suspendido', 'Archivado'],
         default: 'Activo',
     }
-}, { timestamps: true }); // timestamps crea automáticamente createdAt y updatedAt
+}, { timestamps: true,
+    versionKey: false  }); // timestamps crea automáticamente createdAt y updatedAt
 
-module.exports = mongoose.model("Artista", artistaSchema);
+module.exports = mongoose.model("Artista", artistaSchema, 'artistas');

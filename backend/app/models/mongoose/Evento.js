@@ -42,6 +42,7 @@ const eventoSchema = new mongoose.Schema({
         enum: ['Activo', 'Inactivo', 'Pendiente', 'Archivado'],
         default: 'Activo'
     }
-}, { timestamps: true });
+}, { timestamps: true,
+    versionKey: false  });
 
-module.exports = mongoose.model("Evento", eventoSchema);
+module.exports = mongoose.model("Evento", eventoSchema), 'eventos';

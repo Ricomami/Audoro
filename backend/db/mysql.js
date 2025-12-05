@@ -37,7 +37,17 @@ const configuracion = {
     // password: process.env.DB_PASSWORD
 };
 
-async function conectarBD(){
+//CONEXION CON SEQUELIZE
+const { Sequelize } = require('sequelize');
+
+const sequelize = new Sequelize('auditorio', 'root', '',{
+    host: 'localhost',
+    dialect: 'mysql',
+    logging: console.log // Para ver las consultas SQL en la consola
+});
+
+
+async function conectarDB(){
     try {
         const conexion = await mysql.createConnection(configuracion);
         console.log("Conexion establecida con la base de datos.")
@@ -55,13 +65,4 @@ async function desconectarDB(conexion){
     }
 };
 
-
-//CONEXION CON SEQUELIZE
-const { Sequelize } = require('sequelize');
-
-const sequelize = new Sequelize('auditorio', 'root', '',{
-    host: 'localhost',
-    dialect: 'mysql'
-});
-
-module.exports ={ sequelize, conectarBD, desconectarDB };
+module.exports ={ sequelize, conectarDB, desconectarDB };
