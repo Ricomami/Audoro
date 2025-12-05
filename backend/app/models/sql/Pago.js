@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const {sequelize} = require('../../db/mysql');
+const {sequelize} = require('../../../db/mysql');
 const Cliente = require('./Cliente');
 
 const Pago = sequelize.define('Pago', {

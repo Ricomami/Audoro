@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const {sequelize} = require('../../db/mysql');
+const {sequelize} = require('../../../db/mysql');
 const Auditorio = require('./Auditorio'); // FK hacia auditorio
 
 const Seccion = sequelize.define('Seccion', {

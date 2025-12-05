@@ -16,7 +16,7 @@ const seccionSchema = new mongoose.Schema ({
         min: [0, "El precio base no puede ser negativo."]
     },
     auditorio_id: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Number,
         ref: "Auditorio",
         required: true
     },
