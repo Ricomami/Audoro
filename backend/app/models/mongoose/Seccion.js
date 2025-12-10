@@ -25,7 +25,7 @@ const seccionSchema = new mongoose.Schema ({
     },
     estado: {
         type: String,
-        enum:  ['Activo','Inactivo','Pendiente','Archivado'],
+        enum:  ['Activo','Inactivo','Mantenimiento','Archivado'],
         default: 'Activo'
     }
 }, {timestamps: true,

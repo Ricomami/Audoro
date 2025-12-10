@@ -1,178 +1,195 @@
-const con = require('../../db/mysql');
 const { validationResult } = require('express-validator');
 const path = require('path');
 const fs = require('fs');
 
+// IMPORTACIÓN DE MODELOS
+const AuditorioSQL = require('../models/sql/Auditorio'); 
+const AuditorioMongo = require('../models/mongoose/Auditorio');
+
+// Helper para borrar imagen
+const borrarImagen = (ruta) => {
+    if (ruta && fs.existsSync(path.resolve(ruta))) {
+        fs.unlinkSync(path.resolve(ruta));
+    }
+};
+
+// --- INDEX ---
 async function index(req, res) {
-  let c;
-  try {
-    c = await con.conectarBD();
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
-    const [respuesta] = await c.query('SELECT * FROM auditorios');
+    try {
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        const auditorios = await AuditorioSQL.findAll();
 
-    const datosTransformados = respuesta.map(auditorio => ({
-      ...auditorio,
-      imagen_auditorio: auditorio.imagen_auditorio
-        ? `${baseUrl}/${auditorio.imagen_auditorio.replace(/\\/g, "/")}`
-        : null
-    }));
-    res.status(200).json({ datos: datosTransformados });
-  } catch (error) {
-    res.status(400).json({ mensaje: 'Error en la consulta', error: error.message });
-  } finally {
-    await con.desconectarDB(c);
-  }
+        const datosTransformados = auditorios.map(a => {
+            const auditorio = a.toJSON();
+            return {
+                ...auditorio,
+                imagen_auditorio: auditorio.imagen_auditorio
+                    ? `${baseUrl}/${auditorio.imagen_auditorio.replace(/\\/g, "/")}`
+                    : null
+            };
+        });
+
+        res.status(200).json({ datos: datosTransformados });
+    } catch (error) {
+        res.status(400).json({ mensaje: 'Error al obtener auditorios', error: error.message });
+    }
 }
 
+// --- SHOW ---
 async function show(req, res) {
-  let c;
-  try {
-    c = await con.conectarBD();
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
-    const id = req.params.id;
-    const [respuesta] = await c.query('SELECT * FROM auditorios WHERE id_auditorio=?', [id]);
-    if (respuesta.length === 0) {
-      return res.status(404).json({ mensaje: 'Auditorio no encontrado' });
-    }
+    try {
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        const id = req.params.id;
 
-    const auditorio = respuesta[0];
-    auditorio.imagen_auditorio = auditorio.imagen_auditorio
-      ? `${baseUrl}/${auditorio.imagen_auditorio.replace(/\\/g, "/")}`
-      : null;
+        const auditorioInstance = await AuditorioSQL.findByPk(id);
 
-    res.status(200).json({ datos: auditorio });
-  } catch (error) {
-    res.status(400).json({ mensaje: 'Error en la consulta', error: error.message });
-  } finally {
-    await con.desconectarDB(c);
-  }
-}
-
-
-async function store(req, res) {
-  const result = validationResult(req);
-  console.log(result);
-  if (!result.isEmpty()) {
-    return res.status(422).json({ errors: result.array() });
-  }
-
-  let c;
-  try {
-    c = await con.conectarBD();
-    const datos = req.body;
-    const [respuesta] = await c.query(
-      'INSERT INTO auditorios (id_auditorio, nombre, capacidad, direccion, estado) VALUES (?,?,?,?,?)',
-      [datos.id_auditorio, datos.nombre, datos.capacidad, datos.direccion, datos.estado]
-    );
-
-    const nuevo_id = respuesta.insertId;
-    //Si existe un archivo de imagen, lo renombramos con el ID
-    let rutaRelativa = null;
-    if (req.file) {
-      const extension = path.extname(req.file.originalname);
-      const nuevoNombre = `${nuevo_id}-${Date.now()}${extension}`;
-      const nuevaRuta = path.join('uploads', 'auditorios', nuevoNombre);
-      fs.renameSync(req.file.path, nuevaRuta);
-      rutaRelativa = `uploads/auditorios/${nuevoNombre}`;
-
-      //Actualizamos el campo de imagen en la BD
-      await c.query('UPDATE auditorios SET imagen_auditorio=? WHERE  id_auditorio=?',
-        [rutaRelativa, nuevo_id]
-      );
-    }
-
-    //Consultamos el registro completo
-    const [nuevoAuditorio] = await c.query('SELECT * FROM auditorios WHERE id_auditorio=?', [nuevo_id]);
-
-    res.status(201).json({ datos: nuevoAuditorio, idCreada: nuevo_id });
-  } catch (error) {
-    res.status(400).json({ mensaje: 'Error al crear el auditorio', error: error.message });
-  } finally {
-    await con.desconectarDB(c);
-  }
-}
-
-async function update(req, res) {
-
-  const result = validationResult(req);
-  console.log(result);
-  if (!result.isEmpty()) {
-    return res.status(422).json({ errors: result.array() });
-  }
-
-  let c;
-  try {
-    c = await con.conectarBD();
-    const id = req.params.id;
-    const datos = req.body;
-
-    // Obtenemos la imagen actual de el auditorio
-    const [rows] = await c.query(
-      "SELECT imagen_auditorio FROM auditorios WHERE id_auditorio = ?",
-      [id]
-    );
-
-    let rutaImagen = rows[0]?.imagen_auditorio || null;
-
-    // Si viene una nueva imagen en la petición
-    if (req.file) {
-      const extension = path.extname(req.file.originalname);
-      const nuevoNombre = `${id}-${Date.now()}${extension}`;
-      const nuevaRuta = path.join("uploads", "auditorios", nuevoNombre);
-      fs.renameSync(req.file.path, nuevaRuta);
-      rutaRelativa = `uploads/auditorios/${nuevoNombre}`;
-
-
-      // Si había una imagen anterior, la eliminamos
-      if (rutaImagen) {
-        const rutaAbsoluta = path.resolve(rutaImagen);
-
-        if (fs.existsSync(rutaAbsoluta)) {
-          fs.unlinkSync(rutaAbsoluta);
-          console.log("Imagen anterior eliminada:", rutaAbsoluta);
+        if (!auditorioInstance) {
+            return res.status(404).json({ mensaje: 'Auditorio no encontrado' });
         }
-      }
 
-      rutaImagen = rutaRelativa;
+        const auditorio = auditorioInstance.toJSON();
+        auditorio.imagen_auditorio = auditorio.imagen_auditorio
+            ? `${baseUrl}/${auditorio.imagen_auditorio.replace(/\\/g, "/")}`
+            : null;
+
+        res.status(200).json({ datos: auditorio });
+    } catch (error) {
+        res.status(400).json({ mensaje: 'Error al buscar auditorio', error: error.message });
+    }
+}
+
+// --- STORE (Dual Write) ---
+async function store(req, res) {
+    const result = validationResult(req);
+    if (!result.isEmpty()) {
+        return res.status(422).json({ errors: result.array() });
     }
 
-    //Actualizamos todos los campos del cliente, incluyendo la imagen.
+    const datos = req.body;
+    let rutaRelativa = null;
 
-    const [respuesta] = await c.query(
-      'UPDATE auditorios SET nombre=?, capacidad=?, direccion=?, imagen_auditorio=?, estado=? WHERE id_auditorio=?',
-      [datos.nombre, datos.capacidad, datos.direccion, rutaImagen, datos.estado, id]
-    );
-    res.status(200).json({
-      mensaje: "Auditorio actualizado correctamente.",
-      filasModificadas: respuesta.affectedRows,
-      datosActualizados: {
-        id,
-        ...datos,
-        imagen_auditorio: rutaImagen || "Sin cambios",
-      },
-    });
-  } catch (error) {
-    res.status(400).json({ mensaje: 'Error al actualizar auditorio.', error: error.message });
-  } finally {
-    await con.desconectarDB(c);
-  }
+    try {
+        // 1. Crear en MySQL
+        const nuevoAuditorioSQL = await AuditorioSQL.create({
+            nombre: datos.nombre,
+            capacidad: datos.capacidad,
+            direccion: datos.direccion,
+            estado: datos.estado
+        });
+
+        const nuevo_id = nuevoAuditorioSQL.id_auditorio;
+
+        // 2. Imagen
+        if (req.file) {
+            const extension = path.extname(req.file.originalname);
+            const nuevoNombre = `${nuevo_id}-${Date.now()}${extension}`;
+            const nuevaRuta = path.join('uploads', 'auditorios', nuevoNombre);
+            
+            fs.renameSync(req.file.path, nuevaRuta);
+            rutaRelativa = `uploads/auditorios/${nuevoNombre}`;
+
+            nuevoAuditorioSQL.imagen_auditorio = rutaRelativa;
+            await nuevoAuditorioSQL.save();
+        }
+
+        // 3. Crear en MongoDB (Espejo)
+        const nuevoAuditorioMongo = await AuditorioMongo.create({
+            id_sql: nuevo_id,
+            nombre: datos.nombre,
+            capacidad: datos.capacidad,
+            direccion: datos.direccion,
+            estado: datos.estado,
+            imagen_auditorio: rutaRelativa
+        });
+
+        res.status(201).json({ 
+            datos: nuevoAuditorioSQL, 
+            idCreada: nuevo_id,
+            mongo_data: nuevoAuditorioMongo 
+        });
+
+    } catch (error) {
+        if(rutaRelativa) borrarImagen(rutaRelativa);
+        res.status(400).json({ mensaje: 'Error al crear auditorio', error: error.message });
+    }
 }
 
-async function destroy(req, res) {
-  let c;
-  try {
-    c = await con.conectarBD();
+// --- UPDATE (Dual Write) ---
+async function update(req, res) {
+    const result = validationResult(req);
+    if (!result.isEmpty()) {
+        return res.status(422).json({ errors: result.array() });
+    }
+
     const id = req.params.id;
-    const [respuesta] = await c.query(
-      'UPDATE auditorios SET estado=? WHERE id_auditorio=?',
-      ['Inactivo', id]
-    );
-    res.status(200).json({ mensaje: "Auditorio dado de baja.", filasmodificadas: respuesta.affectedRows });
-  } catch (error) {
-    res.status(400).json({ mensaje: 'Error en la consulta.', error: error.message });
-  } finally {
-    await con.desconectarDB(c);
-  }
+    const datos = req.body;
+
+    try {
+        const auditorioSQL = await AuditorioSQL.findByPk(id);
+        if(!auditorioSQL) return res.status(404).json({mensaje: "Auditorio no encontrado"});
+
+        let rutaImagen = auditorioSQL.imagen_auditorio;
+
+        if (req.file) {
+            const extension = path.extname(req.file.originalname);
+            const nuevoNombre = `${id}-${Date.now()}${extension}`;
+            const nuevaRuta = path.join("uploads", "auditorios", nuevoNombre);
+            
+            fs.renameSync(req.file.path, nuevaRuta);
+            if (rutaImagen) borrarImagen(rutaImagen);
+            rutaImagen = `uploads/auditorios/${nuevoNombre}`;
+        }
+
+        // Actualizar SQL
+        await auditorioSQL.update({
+            nombre: datos.nombre,
+            capacidad: datos.capacidad,
+            direccion: datos.direccion,
+            estado: datos.estado,
+            imagen_auditorio: rutaImagen
+        });
+
+        // Actualizar Mongo
+        await AuditorioMongo.findOneAndUpdate(
+            { id_sql: id },
+            {
+                nombre: datos.nombre,
+                capacidad: datos.capacidad,
+                direccion: datos.direccion,
+                estado: datos.estado,
+                imagen_auditorio: rutaImagen
+            }
+        );
+
+        res.status(200).json({ 
+            mensaje: "Auditorio actualizado correctamente.",
+            datos: auditorioSQL 
+        });
+
+    } catch (error) {
+        res.status(400).json({ mensaje: 'Error al actualizar auditorio.', error: error.message });
+    }
 }
 
-module.exports = { index, store, show, update, destroy };
+// --- DESTROY (Dual Write) ---
+async function destroy(req, res) {
+    const id = req.params.id;
+
+    try {
+        const auditorioSQL = await AuditorioSQL.findByPk(id);
+        if(!auditorioSQL) return res.status(404).json({mensaje: "Auditorio no encontrado"});
+
+        await auditorioSQL.update({ estado: 'Inactivo' });
+
+        await AuditorioMongo.findOneAndUpdate(
+            { id_sql: id },
+            { estado: 'Inactivo' }
+        );
+
+        res.status(200).json({ mensaje: "Auditorio dado de baja.", datos: auditorioSQL });
+    } catch (error) {
+        res.status(400).json({ mensaje: 'Error en la consulta.', error: error.message });
+    }
+}
+
+module.exports = { index, show, store, update, destroy };

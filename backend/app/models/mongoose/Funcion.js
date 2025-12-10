@@ -7,8 +7,7 @@ const funcionSchema = mongoose.Schema({
         required: false
     },
     evento_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Evento", 
+        type: Number,
         required: true,
     },
     fecha_hora_funcion: {
@@ -16,7 +15,7 @@ const funcionSchema = mongoose.Schema({
        required: true,
         validate: {
             validator: function (v) {
-                return v >= new Date();
+                return v >= new Date().getTime() - 60000;
             },
             message: "La fecha no puede ser pasada."
         }

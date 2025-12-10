@@ -7,8 +7,7 @@ const asientoSchema = new mongoose.Schema({
         required: false // no obligatorio por si solo se inserta a mongo
     },
     seccion_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Seccion",
+        type: Number,
         required: true,
     },
     fila: {

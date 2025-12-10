@@ -1,92 +1,147 @@
-const con = require('../../db/mysql');
 const { validationResult } = require('express-validator');
 
+// IMPORTACIÓN DE MODELOS
+const EntradaSQL = require('../models/sql/Entrada'); 
+const EntradaMongo = require('../models/mongoose/Entrada');
+
+// --- INDEX (Lectura SQL) ---
 async function index(req, res) {
-    let c;
     try {
-        c = await con.conectarBD();
-        const [respuesta] = await c.query('SELECT * FROM entradas');
-        res.status(200).json({ datos: respuesta });
+        const entradas = await EntradaSQL.findAll();
+        res.status(200).json({ datos: entradas });
     } catch (error) {
-        res.status(400).json({ mensaje: 'Error en la consulta', error: error.message });
-    } finally {
-        await con.desconectarDB(c);
+        res.status(400).json({ mensaje: 'Error al obtener entradas', error: error.message });
     }
-};
-
-async function show(req, res) {
-    let c;
-    try {
-        c = await con.conectarBD();
-        var id = req.params.id;
-        const [respuesta] = await c.query('SELECT * FROM entradas WHERE id_entrada=? ', [id]);
-        res.status(200).json({ datos: respuesta[0] });
-    } catch (error) {
-        res.status(400).json({ mensaje: 'Error en la consulta', error: error.message });
-    } finally {
-        await con.desconectarDB(c);
-    }
-};
-
-async function store(req, res) {
-            
-    const result = validationResult(req);
-    console.log(result);
-    if (!result.isEmpty() ){
-        return res.status(422).json({ errors : result.array() });
-    }
-
-    let c;
-    try {
-        c = await con.conectarBD();
-        const datos = req.body;
-        // res.json({datos});
-        const [respuesta] = await c.query('INSERT INTO entradas (asiento_id, pago_id, funcion_id, cliente_id, precio_final, estado) VALUES (?,?,?,?,?,?) ',
-            [datos.asiento_id, datos.pago_id, datos.funcion_id, datos.cliente_id, datos.precio_final, datos.estado]);
-        res.status(200).json({ datos: respuesta, idCreada: respuesta.insertId });
-    } catch (error) {
-        res.status(400).json({ mensaje: 'Error en la consulta', error : error.message });
-    } finally {
-        await con.desconectarDB(c);
-    }
-};
-
-async function update(req, res) {
-            
-    const result = validationResult(req);
-    console.log(result);
-    if (!result.isEmpty() ){
-        return res.status(422).json({ errors : result.array() });
-    }
-
-    let c;
-    try {
-        c = await con.conectarBD();
-        var id = req.params.id;
-        const datos = req.body;
-        const [respuesta] = await c.query('UPDATE entradas SET asiento_id=?, funcion_id=?, cliente_id=?, precio_final=?, estado=? WHERE id_entrada=?',
-            [datos.asiento_id, datos.funcion_id, datos.cliente_id, datos.precio_final, datos.estado, id]);
-        res.status(200).json({ datos: respuesta, mensaje : 'Filas actualizadas', filasModificadas:respuesta.affectedRows });
-    } catch (error) {
-        res.status(400).json({mensaje : 'Error en la consulta', error:error.message});
-    } finally{
-        await con.desconectarDB(c);
-    }
-};
-
-async function destroy (req, res) {
-    let c;
-    try {
-        c = await con.conectarBD(); 
-        var id = req.params.id;
-        const [respuesta] = await c.query('UPDATE entradas SET estado=? WHERE id_entrada=?',
-            ['Inactivo', id]);
-        res.status(200).json({mensaje : 'Entrada dada de baja', datos : respuesta});
-    } catch (error) {
-        res.status(400).json({mensaje : 'Error en la consulta', error : error.message});
-    }
-};
-
-module.exports = {
-    index, show, store, update, destroy
 }
+
+// --- SHOW (Lectura SQL) ---
+async function show(req, res) {
+    try {
+        const id = req.params.id;
+        const entrada = await EntradaSQL.findByPk(id);
+
+        if (!entrada) {
+            return res.status(404).json({ mensaje: 'Entrada no encontrada' });
+        }
+
+        res.status(200).json({ datos: entrada });
+    } catch (error) {
+        res.status(400).json({ mensaje: 'Error al buscar entrada', error: error.message });
+    }
+}
+
+// --- STORE (Creación Dual) ---
+async function store(req, res) {
+    const result = validationResult(req);
+    if (!result.isEmpty()) {
+        return res.status(422).json({ errors: result.array() });
+    }
+
+    const datos = req.body;
+
+    try {
+        // 1. Crear en MySQL
+        const nuevaEntradaSQL = await EntradaSQL.create({
+            asiento_id: datos.asiento_id,
+            pago_id: datos.pago_id,
+            funcion_id: datos.funcion_id,
+            cliente_id: datos.cliente_id,
+            precio_final: datos.precio_final,
+            estado: datos.estado
+        });
+
+        const nuevo_id = nuevaEntradaSQL.id_entrada;
+
+        // 2. Crear en MongoDB (Espejo)
+        const nuevaEntradaMongo = await EntradaMongo.create({
+            id_sql: nuevo_id,
+            asiento_id: datos.asiento_id,   // ID numérico
+            pago_id: datos.pago_id,         // ID numérico
+            funcion_id: datos.funcion_id,   // ID numérico
+            cliente_id: datos.cliente_id,   // ID numérico
+            precio_final: datos.precio_final,
+            estado: datos.estado
+        });
+
+        res.status(200).json({ 
+            datos: nuevaEntradaSQL, 
+            idCreada: nuevo_id,
+            mongo_data: nuevaEntradaMongo 
+        });
+
+    } catch (error) {
+        res.status(400).json({ mensaje: 'Error al registrar entrada.', error: error.message });
+    }
+}
+
+// --- UPDATE (Actualización Dual) ---
+async function update(req, res) {
+    const result = validationResult(req);
+    if (!result.isEmpty()) {
+        return res.status(422).json({ errors: result.array() });
+    }
+
+    const id = req.params.id;
+    const datos = req.body;
+
+    try {
+        const entradaSQL = await EntradaSQL.findByPk(id);
+        if(!entradaSQL) return res.status(404).json({mensaje: "Entrada no encontrada"});
+
+        // Actualizar SQL
+        await entradaSQL.update({
+            asiento_id: datos.asiento_id,
+            pago_id: datos.pago_id, // Si permites cambiar el pago asociado
+            funcion_id: datos.funcion_id,
+            cliente_id: datos.cliente_id,
+            precio_final: datos.precio_final,
+            estado: datos.estado
+        });
+
+        // Actualizar Mongo
+        await EntradaMongo.findOneAndUpdate(
+            { id_sql: id },
+            {
+                asiento_id: datos.asiento_id,
+                pago_id: datos.pago_id,
+                funcion_id: datos.funcion_id,
+                cliente_id: datos.cliente_id,
+                precio_final: datos.precio_final,
+                estado: datos.estado
+            }
+        );
+
+        res.status(200).json({ 
+            mensaje: 'Entrada actualizada correctamente', 
+            datos: entradaSQL 
+        });
+
+    } catch (error) {
+        res.status(400).json({ mensaje: 'Error al actualizar entrada', error: error.message });
+    }
+}
+
+// --- DESTROY (Borrado Lógico Dual) ---
+async function destroy(req, res) {
+    const id = req.params.id;
+
+    try {
+        const entradaSQL = await EntradaSQL.findByPk(id);
+        if(!entradaSQL) return res.status(404).json({mensaje: "Entrada no encontrada"});
+
+        // Borrado lógico SQL
+        await entradaSQL.update({ estado: 'Inactivo' });
+
+        // Borrado lógico Mongo
+        await EntradaMongo.findOneAndUpdate(
+            { id_sql: id },
+            { estado: 'Inactivo' }
+        );
+
+        res.status(200).json({ mensaje: 'Entrada dada de baja', datos: entradaSQL });
+    } catch (error) {
+        res.status(400).json({ mensaje: 'Error al eliminar', error: error.message });
+    }
+}
+
+module.exports = { index, show, store, update, destroy };

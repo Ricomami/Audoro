@@ -12,7 +12,7 @@ const Auditorio = sequelize.define('Auditorio', {
     direccion: { type: DataTypes.STRING(255) },
     imagen_auditorio: { type: DataTypes.STRING(512) },
     estado: { 
-        type: DataTypes.ENUM('Activo','Inactivo','Pendiente','Archivado'), 
+        type: DataTypes.ENUM('Activo','Inactivo','Mantenimiento'), 
         defaultValue: 'Activo'
     },
 }, {

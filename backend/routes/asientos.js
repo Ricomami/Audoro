@@ -1,90 +1,41 @@
 const express = require('express');
-const routes = express.Router();
+const router = express.Router(); // Cambié 'routes' por 'router' por convención estándar
 const { body } = require('express-validator');
-const asientosController = require('../app/controllers/asientosController')
+const asientosController = require('../app/controllers/asientosController');
 
-routes.get('/', asientosController.index
-//     (req,res) => {
-//     res.json({ok:true,msg:`Muestra todos los asientos, SELECT * FROM asientos`})
-// }
-);
+// --- LECTURAS ---
+router.get('/', asientosController.index);
+router.get('/:id', asientosController.show);
 
-routes.get('/:id', asientosController.show
-//     (req,res) => {
-//     res.json({ok:true,msg:`Muestra solo el asiento con el id=${req.params.id}, SELECT FROM asientos WHERE id=${req.params.id}`})
-// }
-);
-
-
+// --- VALIDACIONES ---
 const rules = [
     body('seccion_id')
-        .escape()
-        .notEmpty()
-        .withMessage("El id de la seccion para asignar el asiento es requerido!")
-        .bail()
-        .isInt()
-        .withMessage("El id de la seccion solo puede ser un numero entero!"),
-    body('fila')
-        .escape()
-        .notEmpty()
-        .withMessage("La fila a asignar del asiento no puede estar vacia!")
-        .bail()
-        .isAlpha()
-        .withMessage("La fila del asiento solo puede ser una letra!"),
-    body('numero_asiento')
-        .escape()
-        .notEmpty()
-        .withMessage("El numero de asiento no puede ir vacio")
-        .bail()
-        .isInt()
-        .withMessage("El numero de asiento solo puede ser un numero entero")
-]
-routes.post('/', rules, asientosController.store
-    //     (req,res) => {
-        //     res.json({ok:true,msg:`Funcion para insertar un nuevo asiento, INSERT INTO asientos...`})
-        // }
-    );
+        .trim()
+        .notEmpty().withMessage("El ID de la sección es requerido")
+        .isInt().withMessage("El ID de la sección debe ser entero"),
     
-    const rules2 = [
-        body('seccion_id')
-            .escape()
-            .notEmpty()
-            .withMessage("El id de la seccion para asignar el asiento es requerido!")
-            .bail()
-            .isInt()
-            .withMessage("El id de la seccion solo puede ser un numero entero!"),
-        body('fila')
-            .escape()
-            .notEmpty()
-            .withMessage("La fila a asignar del asiento no puede estar vacia!")
-            .bail()
-            .isAlpha()
-            .withMessage("La fila del asiento solo puede ser una letra!"),
-        body('numero_asiento')
-            .escape()
-            .notEmpty()
-            .withMessage("El numero de asiento no puede ir vacio")
-            .bail()
-            .isInt()
-            .withMessage("El numero de asiento solo puede ser un numero entero"),
-        body('estado')
-            .escape()
-            .notEmpty()
-            .withMessage("El estado es requerido")
-            .bail()
-            .isAlpha()
-            .withMessage("El estado solo incluye letras")
-    ]
-    routes.put('/:id', rules2, asientosController.update
-//     (req,res) => {
-//     res.json({ok:true,msg:`Funcion para actualizar el asiento con el id=${req.params.id}, UPDATE INTO asientos WHERE id=${req.params.id} `})
-// }
-);
+    body('fila')
+        .trim()
+        .notEmpty().withMessage("La fila es requerida")
+        .isAlpha().withMessage("La fila solo puede ser una letra")
+        .isLength({ min: 1, max: 1 }).withMessage("La fila debe ser un solo caracter")
+        .toUpperCase(), // Convierte a mayúscula automáticamente
+    
+    body('numero_asiento')
+        .trim()
+        .notEmpty().withMessage("El número de asiento es requerido")
+        .isInt({ min: 1 }).withMessage("El número de asiento debe ser positivo"),
 
-routes.delete('/:id', asientosController.destroy
-//     (req, res) => {
-//     res.json({ok:true,msg:`Funcion para eliminar el asiento con el id=${req.params.id}, DELETE FROM asientos WHERE id=${req.params.id}`})
-// }
-);
+    body('estado')
+        .optional()
+        .trim()
+        .isIn(['Activo','Inactivo','Pendiente'])
+        .withMessage("Estado no válido")
+];
 
-module.exports=routes;
+// --- ESCRITURAS ---
+router.post('/', rules, asientosController.store);
+router.put('/:id', rules, asientosController.update);
+router.delete('/:id', asientosController.destroy);
+
+module.exports = router;

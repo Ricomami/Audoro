@@ -1,71 +1,36 @@
 const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');
+const funcionesController = require('../app/controllers/funcionesController');
 
-const funcionesController = require('../app/controllers/funcionesController')
+// --- LECTURAS ---
+router.get('/', funcionesController.index);
+router.get('/:id', funcionesController.show);
 
-router.get('/', funcionesController.index
-//     (req, res) => {
-//     res.json({ok:true,msg:`Muestra todas las funciones, SELECT * FROM funciones`})
-// }
-);
-
-router.get('/:id', funcionesController.show
-//     (req,res) =>{
-//     res.json({ok:true,msg:`Muestra solo la funcion con id=${req.params.id}, SELECT FROM funciones WHERE id=${req.params.id}`})
-// }
-);
-
-
-const rules = [
+// --- VALIDACIONES COMUNES ---
+const validacionesFuncion = [
     body('evento_id')
-        .escape()
-        .notEmpty()
-        .withMessage("El id del evento es requerida!")
-        .bail()
-        .isInt()
-        .withMessage("El id del evento solo puede ser un numero entero"),
+        .trim()
+        .notEmpty().withMessage("El ID del evento es requerido")
+        .isInt().withMessage("El ID del evento debe ser un número entero"),
+
     body('fecha_hora_funcion')
-        .escape()
-        .notEmpty()
-        .withMessage("La fecha y hora de la funcion es requerida!"),
-]
-router.post('/', rules, funcionesController.store
-    //     (req, res) =>[
-        //     res.json({ok:true,msg:`Funcion para insertar una nueva funcion, INSERT INTO funciones...`})
-        // ]
-    );
-    
-    const rules2 = [
-        body('evento_id')
-            .escape()
-            .notEmpty()
-            .withMessage("El id del evento es requerida!")
-            .bail()
-            .isInt()
-            .withMessage("El id del evento solo puede ser un numero entero"),
-        body('fecha_hora_funcion')
-            .escape()
-            .notEmpty()
-            .withMessage("La fecha y hora de la funcion es requerida!"),
-        body('estado')
-            .escape()
-            .notEmpty()
-            .withMessage("El estado es requerido")
-            .bail()
-            .isAlpha()
-            .withMessage("El estado solo incluye letras")
-    ]
-router.put('/:id', rules2, funcionesController.update
-//     (req, res) => {
-//     res.json({ok:true,msg:`Funcion para editar la funcion con id=${req.params.id}, UPDATE funciones WHERE id=${req.params.id}`})
-// }
-);
+        .trim()
+        .notEmpty().withMessage("La fecha y hora es requerida")
+        // Valida que el string tenga formato de fecha (YYYY-MM-DD o ISO)
+        .isISO8601().withMessage("Formato de fecha inválido (Use formato ISO: YYYY-MM-DDTHH:mm:ss)")
+        .toDate(), // Convierte el string a objeto Date para el controlador
 
-router.delete('/:id', funcionesController.destroy
-//     (req, res) =>{
-//     res.json({ok:true,msg:`Fucion para eliminar la funcion con el id=${req.params.id}, DELETE FROM funciones WHERE id=${req.params.id}`})
-// }
-);
+    body('estado')
+        .optional()
+        .trim()
+        .isIn(['Activo','Inactivo','Pendiente','Suspendido'])
+        .withMessage("Estado no válido")
+];
 
-module.exports=router;
+// --- ESCRITURAS ---
+router.post('/', validacionesFuncion, funcionesController.store);
+router.put('/:id', validacionesFuncion, funcionesController.update);
+router.delete('/:id', funcionesController.destroy);
+
+module.exports = router;

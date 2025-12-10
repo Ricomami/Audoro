@@ -2,81 +2,60 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const Cliente = require('../app/models/Cliente');
 const { body } = require('express-validator');
+const clientesController = require('../app/controllers/clientesController');
 
-const clientesControler = require('../app/controllers/clientesController')
-
-//Configurar donde se guardaran las imagenes
+// --- MULTER ---
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, "uploads/clientes/");
     },
     filename: (req, file, cb) => {
-        //Usamos un identificador temporal o con ID o un Date.now()
         const uniqueSuffix = Date.now() + "-" + path.extname(file.originalname); 
         cb(null, file.fieldname + "-" + uniqueSuffix);
     }
 });
 const upload = multer({ storage });
 
+// --- LECTURAS ---
+router.get('/', clientesController.index);
+router.get('/:id', clientesController.show);
 
-
-router.get('/', clientesControler.index
-//     (req, res) => {
-//     res.json({ol:true,msg:`Muestra todos los clientes, SELECT * FROM clientes`})
-// }
-);
-
-router.get('/:id', clientesControler.show
-//     (req,res) =>{
-//     res.json({ok:true,msg:`Muestra solo el cliente con id=${req.params.id}, SELECT FROM clientes WHERE id=${req.params.id}`})
-// }
-);
-
+// --- VALIDACIONES ---
 const rules = [
     body('nombre')
-        .escape()
-        .notEmpty()
-        .withMessage("El nombre del cliente es requerido!"),
-    body('apellido_pat')
-        .escape()
-        .notEmpty()
-        .withMessage("El apellido paterno del clienete es requerido!"),
-]
-router.post('/', upload.single("imagen_cliente"), rules, clientesControler.store
-    //     (req, res) =>[
-        //     res.json({ok:true,msg:`Funcion para insertar un nuevo cliente, INSERT INTO clientes...`})
-        // ]
-    );
+        .trim()
+        .notEmpty().withMessage("El nombre es requerido"),
     
-    const rules2 = [
-        body('nombre')
-            .escape()
-            .notEmpty()
-            .withMessage("El nombre del cliente es requerido!"),
-        body('apellido_pat')
-            .escape()
-            .notEmpty()
-            .withMessage("El apellido paterno del clienete es requerido!"),
-        body('estado')
-            .escape()
-            .notEmpty()
-            .withMessage("El estado es requerido")
-            .bail()
-            .isAlpha()
-            .withMessage("El estado solo incluye letras")
-    ]
-router.put('/:id', upload.single("imagen_cliente"), rules2, clientesControler.update
-//     (req, res) => {
-//     res.json({ok:true,msg:`Funcion para editar el cliente con id=${req.params.id}, UPDATE clientes WHERE id=${req.params.id}`})
-// }
-);
+    body('apellido_pat')
+        .trim()
+        .notEmpty().withMessage("El apellido paterno es requerido"),
+    
+    body('apellido_mat')
+        .optional()
+        .trim(),
 
-router.delete('/:id', clientesControler.destroy
-//     (req, res) =>{
-//     res.json({ok:true,msg:`Fucion para eliminar el cliente con el id=${req.params.id}, DELETE FROM clientes WHERE id=${req.params.id}`})
-// }
-);
+    body('correo')
+        .trim()
+        .notEmpty().withMessage("El correo es requerido")
+        .isEmail().withMessage("Formato de correo inválido"),
 
-module.exports=router;
+    body('telefono')
+        .trim()
+        .notEmpty().withMessage("El teléfono es requerido")
+        .isLength({ min: 10, max: 10 }).withMessage("El teléfono debe tener 10 dígitos")
+        .isNumeric().withMessage("Solo números"),
+
+    body('estado')
+        .optional()
+        .trim()
+        .isIn(['Activo','Inactivo','Suspendido'])
+        .withMessage("Estado no válido")
+];
+
+// --- ESCRITURAS ---
+router.post('/', upload.single("imagen_cliente"), rules, clientesController.store);
+router.put('/:id', upload.single("imagen_cliente"), rules, clientesController.update);
+router.delete('/:id', clientesController.destroy);
+
+module.exports = router;

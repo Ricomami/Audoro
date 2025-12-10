@@ -1,77 +1,39 @@
 const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');
-
 const eventos_artistasController = require('../app/controllers/eventos_artistasController');
 
-router.get('/', eventos_artistasController.index
-//     (req, res) => {
-//     res.json({ok:true,msg:`Muestra todos los eventos de artistas, SELECT * FROM evento_artistas`})
-// }
-);
+// --- LECTURAS ---
+router.get('/', eventos_artistasController.index);
 
-router.get('/:evento_id/:artista_id', eventos_artistasController.show
-//     (req,res) =>{
-//     res.json({ok:true,msg:`Muestra solo los eventos de artistas con id=${req.params.id}, SELECT INTO evento+artistas WHERE id=${req.params.id}`})
-// }
-);
+// OJO: Necesitamos dos parámetros en la URL
+router.get('/:evento_id/:artista_id', eventos_artistasController.show);
 
-
+// --- VALIDACIONES ---
 const rules = [
     body('evento_id')
-        .escape()
-        .notEmpty()
-        .withMessage("El id del evento es requerida!")
-        .bail()
-        .isInt()
-        .withMessage("El id del evento solo puede ser un numero entero"),
+        .trim()
+        .notEmpty().withMessage("El id del evento es requerido")
+        .isInt().withMessage("El id del evento debe ser entero"),
+        
     body('artista_id')
-        .escape()
-        .notEmpty()
-        .withMessage("El id del artista es requerida!")
-        .bail()
-        .isInt()
-        .withMessage("El id del artista solo puede ser un numero entero"),
-]
-router.post('/', rules, eventos_artistasController.store
-    //     (req, res) =>[
-//     res.json({ok:true,msg:`Funcion para insertar nuevos eventos de artistas, INSERT INTO evento_artistas...`})
-// ]
-);
-
-const rules2 = [
-    body('evento_id')
-        .escape()
-        .notEmpty()
-        .withMessage("El id del evento es requerida!")
-        .bail()
-        .isInt()
-        .withMessage("El id del evento solo puede ser un numero entero"),
-    body('artista_id')
-        .escape()
-        .notEmpty()
-        .withMessage("El id del artista es requerida!")
-        .bail()
-        .isInt()
-        .withMessage("El id del artista solo puede ser un numero entero"),
+        .trim()
+        .notEmpty().withMessage("El id del artista es requerido")
+        .isInt().withMessage("El id del artista debe ser entero"),
+    
     body('estado')
-        .escape()
-        .notEmpty()
-        .withMessage("El estado es requerido")
-        .bail()
-        .isAlpha()
-        .withMessage("El estado solo incluye letras")
-]
-router.put('/:evento_id/:artista_id', rules2, eventos_artistasController.update
-//     (req, res) => {
-//     res.json({ok:true,msg:`Funcion para actualizar el evento de artistas con id=${req.params.id}, UPDATE INTO evento_artistas WHERE id=${req.params.id}`})
-// }
-);
+        .optional()
+        .trim()
+        .isIn(['Activo','Inactivo','Pendiente','Archivado'])
+        .withMessage("Estado no válido")
+];
 
-router.delete('/:id', eventos_artistasController.destroy
-//     (req, res) =>{
-//     res.json({ok:true,msg:`Funcion para eliminar el evento de artistas con id=${req.params.id}, DELETE FROM evento_artistas WHERE id=${req.params.id}`})
-// }
-);
+// --- ESCRITURAS ---
+router.post('/', rules, eventos_artistasController.store);
 
-module.exports=router;
+router.put('/:evento_id/:artista_id', rules, eventos_artistasController.update);
+
+// CORRECCIÓN IMPORTANTE: Borrar requiere ambos IDs
+router.delete('/:evento_id/:artista_id', eventos_artistasController.destroy);
+
+module.exports = router;

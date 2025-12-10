@@ -21,8 +21,7 @@ const eventoSchema = new mongoose.Schema({
     },
     fecha: {
         type: Date,
-        required: true,
-        min: [new Date(), "La fecha no puede ser pasada."]
+        required: true
     },
     hora_fin: {
         type: Date,
@@ -33,16 +32,15 @@ const eventoSchema = new mongoose.Schema({
         min: [0, "El aforo del evento no puede ser negativo."]
     },
     auditorio_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Auditorio",
+        type: Number,
         required: true
     },
     estado: {
         type: String,
-        enum: ['Activo', 'Inactivo', 'Pendiente', 'Archivado'],
+        enum: ['Activo','Inactivo','Pendiente','Archivado'],
         default: 'Activo'
     }
 }, { timestamps: true,
     versionKey: false  });
 
-module.exports = mongoose.model("Evento", eventoSchema), 'eventos';
+module.exports = mongoose.model("Evento", eventoSchema, 'eventos');

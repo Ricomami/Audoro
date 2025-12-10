@@ -6,7 +6,7 @@ const auditorioSchema = new mongoose.Schema({
         type: Number,
         required: false // no obligatorio por si solo se inserta a mongo
     }, 
-    nombre_auditorio: {
+    nombre: {
         type: String,
         required: true,
         unique: true,
@@ -26,7 +26,7 @@ const auditorioSchema = new mongoose.Schema({
     },
     estado: {
         type: String,
-        enum: ['Activo', 'Inactivo', 'Pendiente', 'Archivado'],
+        enum: ['Activo', 'Inactivo', 'Mantenimiento'],
         default: 'Activo',
     }
 }, { timestamps: true,

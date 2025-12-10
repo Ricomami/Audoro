@@ -13,7 +13,7 @@ const Seccion = sequelize.define('Seccion', {
     auditorio_id: { type: DataTypes.INTEGER, allowNull: false },
     imagen_seccion: { type: DataTypes.STRING(512) },
     estado: { 
-        type: DataTypes.ENUM('Activo','Inactivo','Pendiente','Archivado'), 
+        type: DataTypes.ENUM('Activo','Inactivo','Mantenimiento','Archivado'), 
         defaultValue: 'Activo' },
 }, {
     tableName: 'secciones',

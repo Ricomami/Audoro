@@ -7,8 +7,7 @@ const entradaSchema = new mongoose.Schema({
         required: false // no obligatorio por si solo se inserta a mongo
     },
     asiento_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Asiento",
+        type: Number,
         required: true,
     },
     pago_id: {
@@ -22,8 +21,7 @@ const entradaSchema = new mongoose.Schema({
         required: true
     },
     cliente_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Cliente",
+        type: Number,
         required: true
     },
     precio_final: {
@@ -32,7 +30,7 @@ const entradaSchema = new mongoose.Schema({
     },
     estado: {
         type: String,
-        enum: ['Activo', 'Inactivo', 'Pendiente', 'Archivado'],
+        enum: ['Activo','Inactivo','Pendiente','Archivado'],
         default: 'Activo'
     }
 }, {

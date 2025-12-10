@@ -12,7 +12,7 @@ const eventos_artistaSchema = new mongoose.Schema({
   },
   estado: {
     type: String,
-    enum: ['Activo','Inactivo','Pendiente','Archivado'],
+    enum: ['Activo','Inactivo','Pendiente','Suspendido','Archivado'],
     default: 'Activo'
   }
 }, { timestamps: true,

@@ -6,7 +6,7 @@ const clienteSchema = new mongoose.Schema({
         type: Number,
         required: false // no obligatorio por si solo se inserta a mongo
     },
-    nombre_cliente: {
+    nombre: {
         type: String,
         required: true,
         trim: true
@@ -23,7 +23,6 @@ const clienteSchema = new mongoose.Schema({
     correo: {
         type: String,
         trim: true,
-        unique: true,
         match: [/^[\w.-]+@[\w.-]+\.\w+$/, "Correo invalido"]
     },
     telefono: {

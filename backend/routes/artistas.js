@@ -2,82 +2,50 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const { body, validationResult } = require('express-validator');
-const Artista = require('../app/models/Artista');
+const { body } = require('express-validator');
 const artistasController = require('../app/controllers/artistasController');
 
-//Configurar donde se guardaran las imagenes
-const storage  = multer.diskStorage({
+// --- MULTER ---
+const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, "uploads/artistas/");
     },
     filename: (req, file, cb) => {
-        //Usamos un identificador temporal o con ID o un Date.now()
         const uniqueSuffix = Date.now() + "-" + path.extname(file.originalname); 
         cb(null, file.fieldname + "-" + uniqueSuffix);
     }
 });
 const upload = multer({ storage });
 
+// --- LECTURAS ---
+router.get('/', artistasController.index);
+router.get('/:id', artistasController.show);
 
-
-//INDEX - Todos los registros
-router.get('/', artistasController.index 
-    // (req, res) => {
-    // res.json({ok:true,msg:`Muestra todos los artistas SELECT * FROM artistas `})
-// }
-);
-
-router.get('/:id', artistasController.show 
-//     (req,res) =>{
-//     res.json({ok:true,msg:`Muestra solo el artista con id=${req.params.id}, SELECT FROM artistas WHERE id=${req.params.id}`})
-// }
-);
-
+// --- VALIDACIONES ---
 const rules = [
     body('nombre_artista')
-        .escape()
-        .notEmpty()
-        .withMessage("El nombre del artista es requerido!"),
-    body('genero')
-        .escape()
-        .notEmpty()
-        .withMessage("El género del artista es requerido!")
-]
-router.post('/', upload.single("imagen"), rules, artistasController.store
-    //      (req, res) =>[
-        //     res.json({ok:true,msg:`Funcion para insertar un nuevo artista, INSERT INTO artistas...`})
-        // ]
-    );
+        .trim()
+        .notEmpty().withMessage("El nombre del artista es requerido"),
     
-    const rules2 = [
-        body('nombre_artista')
-            .escape()
-            .notEmpty()
-            .withMessage("El nombre del artista es requerido!"),
-        body('genero')
-            .escape()
-            .notEmpty()
-            .withMessage("El género del artista es requerido!"),
-        body('estado')
-            .escape()
-            .notEmpty()
-            .withMessage("El estado es requerido")
-            .bail()
-            .isAlpha()
-            .withMessage("El estado solo debe incluir letras")
+    body('genero')
+        .trim()
+        .notEmpty().withMessage("El género del artista es requerido"),
+    
+    body('descripcion')
+        .optional()
+        .trim(),
 
-    ]
-router.put('/:id', upload.single("imagen"), rules2, artistasController.update
-//     (req, res) => {
-//     res.json({ok:true,msg:`Funcion para editar el artista con id=${req.params.id}, UPDATE artistas WHERE id=${req.params.id}`})
-// }
-);
+    body('estado')
+        .optional()
+        .trim()
+        .isIn(['Activo','Inactivo','Pendiente','Suspendido','Archivado'])
+        .withMessage("Estado no válido")
+];
 
-router.delete('/:id', artistasController.destroy
-//     (req, res) =>{
-//     res.json({ok:true,msg:`Funcion para eliminar el artista con id=${req.params.id}, DELETE FROM artiistas WHETE id=${req.params.id}`})
-// }
-);
+// --- ESCRITURAS ---
+// Nota: 'imagen' es el nombre del campo que envías desde Angular/Postman
+router.post('/', upload.single("imagen"), rules, artistasController.store);
+router.put('/:id', upload.single("imagen"), rules, artistasController.update);
+router.delete('/:id', artistasController.destroy);
 
-module.exports=router;
+module.exports = router;

@@ -7,8 +7,7 @@ const pagoSchema = new mongoose.Schema({
         required: false
     },
     cliente_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Cliente",
+        type: Number,
         required: true
     },
     metodo_pago: { 
